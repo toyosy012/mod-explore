@@ -17,7 +17,7 @@ type UniqueDinosaurTest struct {
 	defaultDamageMultiplier UniqueMultiplier[Melee]
 }
 
-func TestUserAccountService(t *testing.T) {
+func TestUniqueDinosaur(t *testing.T) {
 	s := NewUniqueDinosaurTestSuite()
 	suite.Run(t, &s)
 }
