@@ -8,7 +8,7 @@ import (
 	"mods-explore/ark/omega/services/variant"
 )
 
-type UniqueDinosaurTest struct {
+type UniqueDinosaurTestSuite struct {
 	suite.Suite
 
 	baseDino                Dinosaur
@@ -20,8 +20,11 @@ type UniqueDinosaurTest struct {
 }
 
 func TestUniqueDinosaur(t *testing.T) {
-	s := NewUniqueDinosaurTestSuite()
-	suite.Run(t, &s)
+	s, err := NewUniqueDinosaurTestSuite()
+	if err != nil {
+		t.Fatal(err)
+	}
+	suite.Run(t, s)
 }
 
 func NewUniqueDinosaurTestSuite() (*UniqueDinosaurTestSuite, error) {
@@ -76,7 +79,7 @@ func NewUniqueDinosaurTestSuite() (*UniqueDinosaurTestSuite, error) {
 		return nil, err
 	}
 
-	return UniqueDinosaurTest{
+	return &UniqueDinosaurTestSuite{
 		baseDino: dino,
 
 		defaultID:               UniqueDinosaurID(1),
@@ -84,7 +87,7 @@ func NewUniqueDinosaurTestSuite() (*UniqueDinosaurTestSuite, error) {
 		variants:                variants,
 		defaultHealthMultiplier: *defaultHealthMultiplier,
 		defaultDamageMultiplier: *defaultDamageMultiplier,
-	}
+	}, nil
 }
 
 func (s *UniqueDinosaurTestSuite) TestTotalMultiplier() {
@@ -93,7 +96,7 @@ func (s *UniqueDinosaurTestSuite) TestTotalMultiplier() {
 	s.Equal(expect, s.variants.TotalMultiplier())
 }
 
-func (s *UniqueDinosaurTest) TestMultiplierHealth() {
+func (s *UniqueDinosaurTestSuite) TestMultiplierHealth() {
 	s.T().Log("体力型で倍率の型とベース値の計算が可能かテスト")
 
 	uniqueDino := NewUniqueDinosaur(
@@ -105,7 +108,7 @@ func (s *UniqueDinosaurTest) TestMultiplierHealth() {
 	s.Equal(health, uniqueHealth)
 }
 
-func (s *UniqueDinosaurTest) TestErrMultiplierHealthZero() {
+func (s *UniqueDinosaurTestSuite) TestErrMultiplierHealthZero() {
 	s.T().Log("体力型で倍率が0のエラーケースのテスト")
 
 	if _, err := NewUniqueMultiplier[Health](0); err == nil {
@@ -113,7 +116,7 @@ func (s *UniqueDinosaurTest) TestErrMultiplierHealthZero() {
 	}
 }
 
-func (s *UniqueDinosaurTest) TestMultiplierDamage() {
+func (s *UniqueDinosaurTestSuite) TestMultiplierDamage() {
 	s.T().Log("攻撃力型で倍率の型とベース値の計算が可能かテスト")
 
 	uniqueDino := NewUniqueDinosaur(
@@ -125,7 +128,7 @@ func (s *UniqueDinosaurTest) TestMultiplierDamage() {
 	s.Equal(melee, uniqueHealth)
 }
 
-func (s *UniqueDinosaurTest) TestErrMultiplierDamageZero() {
+func (s *UniqueDinosaurTestSuite) TestErrMultiplierDamageZero() {
 	s.T().Log("攻撃力型で倍率が0のエラーケースのテス")
 
 	if _, err := NewUniqueMultiplier[Melee](0); err == nil {
