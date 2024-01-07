@@ -25,7 +25,10 @@ func TestUniqueDinosaur(t *testing.T) {
 }
 
 func NewUniqueDinosaurTestSuite() (*UniqueDinosaurTestSuite, error) {
-	baseHealth, _ := NewHealth(2)
+	baseHealth, err := NewHealth(2)
+	if err != nil {
+		return nil, err
+	}
 	baseMelee := NewMelee(2)
 
 	dino := NewDinosaur(
@@ -64,8 +67,14 @@ func NewUniqueDinosaurTestSuite() (*UniqueDinosaurTestSuite, error) {
 		},
 	)
 
-	defaultHealthMultiplier, _ := NewUniqueMultiplier[Health](1)
-	defaultDamageMultiplier, _ := NewUniqueMultiplier[Melee](1)
+	defaultHealthMultiplier, err := NewUniqueMultiplier[Health](variants.TotalMultiplier())
+	if err != nil {
+		return nil, err
+	}
+	defaultDamageMultiplier, err := NewUniqueMultiplier[Melee](variants.TotalMultiplier())
+	if err != nil {
+		return nil, err
+	}
 
 	return UniqueDinosaurTest{
 		baseDino: dino,
@@ -87,13 +96,12 @@ func (s *UniqueDinosaurTestSuite) TestTotalMultiplier() {
 func (s *UniqueDinosaurTest) TestMultiplierHealth() {
 	s.T().Log("体力型で倍率の型とベース値の計算が可能かテスト")
 
-	healthMultiplier, _ := NewUniqueMultiplier[Health](5)
 	uniqueDino := NewUniqueDinosaur(
-		s.baseDino, UniqueDinosaurID(1), s.defaultName, s.variants, *healthMultiplier, s.defaultDamageMultiplier,
+		s.baseDino, UniqueDinosaurID(1), s.defaultName, s.variants, s.defaultHealthMultiplier, s.defaultDamageMultiplier,
 	)
 
-	uniqueHealth := uniqueDino.healthMultiplier.multiple(uniqueDino.Dinosaur.baseHealth)
-	health, _ := NewHealth(10)
+	uniqueHealth := uniqueDino.Health()
+	health := UniqueMultipliedStatus[Health](72.0)
 	s.Equal(health, uniqueHealth)
 }
 
@@ -108,14 +116,13 @@ func (s *UniqueDinosaurTest) TestErrMultiplierHealthZero() {
 func (s *UniqueDinosaurTest) TestMultiplierDamage() {
 	s.T().Log("攻撃力型で倍率の型とベース値の計算が可能かテスト")
 
-	healthMultiplier, _ := NewUniqueMultiplier[Health](5)
 	uniqueDino := NewUniqueDinosaur(
-		s.baseDino, UniqueDinosaurID(1), "Kenny", s.variants, *healthMultiplier, s.defaultDamageMultiplier,
+		s.baseDino, UniqueDinosaurID(1), "Kenny", s.variants, s.defaultHealthMultiplier, s.defaultDamageMultiplier,
 	)
 
-	uniqueHealth := uniqueDino.healthMultiplier.multiple(uniqueDino.Dinosaur.baseHealth)
-	health, _ := NewHealth(10)
-	s.Equal(health, uniqueHealth)
+	uniqueHealth := uniqueDino.Damage()
+	melee := UniqueMultipliedStatus[Melee](72.0)
+	s.Equal(melee, uniqueHealth)
 }
 
 func (s *UniqueDinosaurTest) TestErrMultiplierDamageZero() {
