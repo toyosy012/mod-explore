@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+
+	"mods-explore/ark/omega/services/variant"
 )
 
 type UniqueDinosaurTest struct {
@@ -12,7 +14,7 @@ type UniqueDinosaurTest struct {
 	baseDino                Dinosaur
 	defaultID               UniqueDinosaurID
 	defaultName             UniqueName
-	variants                [2]string
+	variants                UniqueVariant
 	defaultHealthMultiplier UniqueMultiplier[Health]
 	defaultDamageMultiplier UniqueMultiplier[Melee]
 }
@@ -22,7 +24,7 @@ func TestUniqueDinosaur(t *testing.T) {
 	suite.Run(t, &s)
 }
 
-func NewUniqueDinosaurTestSuite() UniqueDinosaurTest {
+func NewUniqueDinosaurTestSuite() (*UniqueDinosaurTestSuite, error) {
 	baseHealth, _ := NewHealth(2)
 	baseMelee := NewMelee(2)
 
@@ -33,6 +35,35 @@ func NewUniqueDinosaurTestSuite() UniqueDinosaurTest {
 		baseMelee,
 	)
 
+	cosmicMultiplier, err := NewVariantGroupMultiplier(6.0)
+	if err != nil {
+		return nil, err
+	}
+	natureMultiplier, err := NewVariantGroupMultiplier(6.0)
+	if err != nil {
+		return nil, err
+	}
+
+	variants := UniqueVariant(
+		[2]DinosaurVariant{
+			NewDinosaurVariant(
+				variant.NewVariant(cosmic, singularity),
+				cosmicMultiplier,
+				[]VariantDescription{
+					"AoE explosive tick damage, traps dinos in center.",
+					"Destroys corpses.",
+				},
+			),
+			NewDinosaurVariant(
+				variant.NewVariant(nature, thunderstorm),
+				natureMultiplier,
+				[]VariantDescription{
+					"Summons lightning bolts within an area to strike random targets.",
+				},
+			),
+		},
+	)
+
 	defaultHealthMultiplier, _ := NewUniqueMultiplier[Health](1)
 	defaultDamageMultiplier, _ := NewUniqueMultiplier[Melee](1)
 
@@ -41,10 +72,16 @@ func NewUniqueDinosaurTestSuite() UniqueDinosaurTest {
 
 		defaultID:               UniqueDinosaurID(1),
 		defaultName:             "Kenny",
-		variants:                [2]string{"Phoenix", "Self-Destructive"},
+		variants:                variants,
 		defaultHealthMultiplier: *defaultHealthMultiplier,
 		defaultDamageMultiplier: *defaultDamageMultiplier,
 	}
+}
+
+func (s *UniqueDinosaurTestSuite) TestTotalMultiplier() {
+	s.T().Log("ユニーク生物の持つバリアント倍率が乗算で算出されているか")
+	expect := UniqueTotalMultiplier(36.0)
+	s.Equal(expect, s.variants.TotalMultiplier())
 }
 
 func (s *UniqueDinosaurTest) TestMultiplierHealth() {

@@ -1,13 +1,17 @@
 package creature
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/samber/lo"
+)
 
 type UniqueDinosaur struct {
 	Dinosaur
 
 	uniqueDinoID     UniqueDinosaurID
 	uniqueName       UniqueName
-	variants         UniqueVariants
+	variants         UniqueVariant
 	healthMultiplier UniqueMultiplier[Health]
 	damageMultiplier UniqueMultiplier[Melee]
 }
@@ -16,7 +20,7 @@ func NewUniqueDinosaur(
 	base Dinosaur,
 	id UniqueDinosaurID,
 	name UniqueName,
-	variants UniqueVariants,
+	variants UniqueVariant,
 	healthMultiplier UniqueMultiplier[Health],
 	damageMultiplier UniqueMultiplier[Melee],
 ) UniqueDinosaur {
@@ -58,3 +62,19 @@ func (d UniqueDinosaur) Health() Health {
 func (d UniqueDinosaur) Damage() Melee {
 	return d.damageMultiplier.multiple(d.baseMelee)
 }
+
+type UniqueVariant [2]DinosaurVariant
+
+func (v UniqueVariant) TotalMultiplier() UniqueTotalMultiplier {
+	return lo.ReduceRight[DinosaurVariant, UniqueTotalMultiplier](
+		v[:], // slice to list
+		func(agg UniqueTotalMultiplier, item DinosaurVariant, _ int) UniqueTotalMultiplier {
+			return UniqueTotalMultiplier(float32(agg) * item.GroupMultiplier().ToFloat32())
+		},
+		1.0,
+	)
+}
+
+type UniqueTotalMultiplier float32
+
+func (m UniqueTotalMultiplier) ToFloat32() float32 { return float32(m) }
