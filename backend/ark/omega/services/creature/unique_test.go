@@ -112,7 +112,7 @@ func (s *UniqueDinosaurTestSuite) TestErrMultiplierHealthZero() {
 	s.T().Log("体力型で倍率が0のエラーケースのテスト")
 
 	if _, err := NewUniqueMultiplier[Health](0); err == nil {
-		s.T().Log("体力型の倍率が0でエラーになっていません")
+		s.T().Errorf("体力型の倍率が0でエラーになっていません")
 	}
 }
 
@@ -132,6 +132,6 @@ func (s *UniqueDinosaurTestSuite) TestErrMultiplierDamageZero() {
 	s.T().Log("攻撃力型で倍率が0のエラーケースのテス")
 
 	if _, err := NewUniqueMultiplier[Melee](0); err == nil {
-		s.T().Log("攻撃力型の倍率が0でエラーになっていません")
+		s.T().Errorf("攻撃力型の倍率が0でエラーになっていません")
 	}
 }
