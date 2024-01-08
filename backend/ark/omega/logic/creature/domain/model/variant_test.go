@@ -1,21 +1,20 @@
-package creature
+package model
 
 import (
+	"mods-explore/ark/omega/logic/variant/domain/model"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-
-	"mods-explore/ark/omega/services/variant"
 )
 
 var (
-	cosmic = variant.GroupName("Cosmic")
-	nature = variant.GroupName("Nature")
+	cosmic = model.GroupName("Cosmic")
+	nature = model.GroupName("Nature")
 )
 
 var (
-	singularity  = variant.Name("Singularity")
-	thunderstorm = variant.Name("Thunderstorm")
+	singularity  = model.Name("Singularity")
+	thunderstorm = model.Name("Thunderstorm")
 )
 
 type DinosaurVariantTestSuite struct {
@@ -36,7 +35,7 @@ func NewDinosaurVariantTestSuite() (*DinosaurVariantTestSuite, error) {
 	}
 	return &DinosaurVariantTestSuite{
 		dinoSingularity: NewDinosaurVariant(
-			variant.NewVariant(cosmic, singularity),
+			model.NewVariant(cosmic, singularity),
 			cosmicMultiplier,
 			[]VariantDescription{
 				"AoE explosive tick damage, traps dinos in center.",
@@ -44,7 +43,7 @@ func NewDinosaurVariantTestSuite() (*DinosaurVariantTestSuite, error) {
 			},
 		),
 		dinoThunderstorm: NewDinosaurVariant(
-			variant.NewVariant(nature, thunderstorm),
+			model.NewVariant(nature, thunderstorm),
 			natureMultiplier,
 			[]VariantDescription{
 				"Summons lightning bolts within an area to strike random targets.",

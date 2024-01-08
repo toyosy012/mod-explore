@@ -1,4 +1,4 @@
-package creature
+package model
 
 import (
 	"errors"

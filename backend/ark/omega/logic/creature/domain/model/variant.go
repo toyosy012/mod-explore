@@ -1,9 +1,9 @@
-package creature
+package model
 
 import (
 	"errors"
 
-	"mods-explore/ark/omega/services/variant"
+	"mods-explore/ark/omega/logic/variant/domain/model"
 )
 
 var (
@@ -25,13 +25,13 @@ func NewVariantGroupMultiplier(value float32) (VariantGroupMultiplier, error) {
 type VariantDescription string
 type VariantDescriptions []VariantDescription
 type DinosaurVariant struct {
-	variant.Variant
+	model.Variant
 	multiplier   VariantGroupMultiplier
 	descriptions VariantDescriptions
 }
 
 func NewDinosaurVariant(
-	variant variant.Variant,
+	variant model.Variant,
 	multiplier VariantGroupMultiplier,
 	descriptions VariantDescriptions,
 ) DinosaurVariant {

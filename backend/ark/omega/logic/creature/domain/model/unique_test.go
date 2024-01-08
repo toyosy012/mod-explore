@@ -1,11 +1,11 @@
-package creature
+package model
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 
-	"mods-explore/ark/omega/services/variant"
+	"mods-explore/ark/omega/logic/variant/domain/model"
 )
 
 type UniqueDinosaurTestSuite struct {
@@ -53,7 +53,7 @@ func NewUniqueDinosaurTestSuite() (*UniqueDinosaurTestSuite, error) {
 	variants := UniqueVariant(
 		[2]DinosaurVariant{
 			NewDinosaurVariant(
-				variant.NewVariant(cosmic, singularity),
+				model.NewVariant(cosmic, singularity),
 				cosmicMultiplier,
 				[]VariantDescription{
 					"AoE explosive tick damage, traps dinos in center.",
@@ -61,7 +61,7 @@ func NewUniqueDinosaurTestSuite() (*UniqueDinosaurTestSuite, error) {
 				},
 			),
 			NewDinosaurVariant(
-				variant.NewVariant(nature, thunderstorm),
+				model.NewVariant(nature, thunderstorm),
 				natureMultiplier,
 				[]VariantDescription{
 					"Summons lightning bolts within an area to strike random targets.",

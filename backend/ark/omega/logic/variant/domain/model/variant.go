@@ -1,4 +1,4 @@
-package variant
+package model
 
 type GroupName string
 
