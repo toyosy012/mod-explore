@@ -53,7 +53,7 @@ func NewUniqueDinosaurTestSuite() (*UniqueDinosaurTestSuite, error) {
 	variants := UniqueVariant(
 		[2]DinosaurVariant{
 			NewDinosaurVariant(
-				model.NewVariant(cosmic, singularity),
+				model.NewVariant(cosmicID, cosmic, singularity),
 				cosmicMultiplier,
 				[]VariantDescription{
 					"AoE explosive tick damage, traps dinos in center.",
@@ -61,7 +61,7 @@ func NewUniqueDinosaurTestSuite() (*UniqueDinosaurTestSuite, error) {
 				},
 			),
 			NewDinosaurVariant(
-				model.NewVariant(nature, thunderstorm),
+				model.NewVariant(natureID, nature, thunderstorm),
 				natureMultiplier,
 				[]VariantDescription{
 					"Summons lightning bolts within an area to strike random targets.",

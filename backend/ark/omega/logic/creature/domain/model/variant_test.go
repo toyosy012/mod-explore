@@ -8,8 +8,10 @@ import (
 )
 
 var (
-	cosmic = model.GroupName("Cosmic")
-	nature = model.GroupName("Nature")
+	cosmic   = model.GroupName("Cosmic")
+	cosmicID = model.VariantID(1)
+	nature   = model.GroupName("Nature")
+	natureID = model.VariantID(2)
 )
 
 var (
@@ -35,7 +37,7 @@ func NewDinosaurVariantTestSuite() (*DinosaurVariantTestSuite, error) {
 	}
 	return &DinosaurVariantTestSuite{
 		dinoSingularity: NewDinosaurVariant(
-			model.NewVariant(cosmic, singularity),
+			model.NewVariant(cosmicID, cosmic, singularity),
 			cosmicMultiplier,
 			[]VariantDescription{
 				"AoE explosive tick damage, traps dinos in center.",
@@ -43,7 +45,7 @@ func NewDinosaurVariantTestSuite() (*DinosaurVariantTestSuite, error) {
 			},
 		),
 		dinoThunderstorm: NewDinosaurVariant(
-			model.NewVariant(nature, thunderstorm),
+			model.NewVariant(natureID, nature, thunderstorm),
 			natureMultiplier,
 			[]VariantDescription{
 				"Summons lightning bolts within an area to strike random targets.",
