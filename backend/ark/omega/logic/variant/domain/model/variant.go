@@ -38,3 +38,5 @@ type VariantGroupName string
 
 func (g VariantGroup) ID() VariantGroupID     { return g.id }
 func (g VariantGroup) Name() VariantGroupName { return g.name }
+
+type VariantGroups []VariantGroup
