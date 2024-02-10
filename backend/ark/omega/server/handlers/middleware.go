@@ -9,12 +9,13 @@ import (
 	"mods-explore/ark/omega/logic"
 )
 
-func ErrorHandler(err error, c echo.Context) {
-	var status int
-	code, ok := failure.CodeOf(err)
-	if !ok {
-		status = http.StatusInternalServerError
-	}
+func NewErrorHandler(s *echo.Echo) func(err error, c echo.Context) {
+	return func(err error, c echo.Context) {
+		code, ok := failure.CodeOf(err)
+		if !ok {
+			s.DefaultHTTPErrorHandler(err, c)
+			return
+		}
 
 	switch code {
 	case logic.InvalidArgument:
