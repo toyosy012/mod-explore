@@ -91,8 +91,29 @@ func (v VariantClient) ListVariants(ctx context.Context) (model.Variants, error)
 	return results, nil
 }
 
-func (v VariantClient) CreateVariant(context.Context, service.CreateVariant) (*model.Variant, error) {
-	return nil, nil
+func (v VariantClient) CreateVariant(ctx context.Context, create service.CreateVariant) (*model.Variant, error) {
+	stmt, err := v.PrepareNamedContext(
+		ctx,
+		`INSERT INTO variants (name, group_id) VALUES (:name, :groupID) RETURNING id;`,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var id int
+	err = stmt.
+		QueryRowxContext(ctx, map[string]any{"name": create.Name(), "groupID": create.GroupID()}).
+		Scan(&id)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := v.FindVariant(ctx, model.VariantID(id))
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 func (v VariantClient) UpdateVariant(context.Context, service.UpdateVariant) (*model.Variant, error) {
 	return nil, nil
