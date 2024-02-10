@@ -33,6 +33,7 @@ func NewUpdateVariant(id model.VariantID, groupID model.GroupID, name model.Name
 	return UpdateVariant{id, groupID, name}
 }
 
+func (v UpdateVariant) ID() model.VariantID    { return v.id }
 func (v UpdateVariant) GroupID() model.GroupID { return v.groupID }
 func (v UpdateVariant) Name() model.Name       { return v.name }
 
