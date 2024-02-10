@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 
@@ -137,4 +139,11 @@ func (v VariantClient) UpdateVariant(ctx context.Context, update service.UpdateV
 
 	return result, nil
 }
-func (v VariantClient) DeleteVariant(context.Context, model.VariantID) error { return nil }
+func (v VariantClient) DeleteVariant(ctx context.Context, id model.VariantID) error {
+	_, err := v.NamedExecContext(
+		ctx,
+		`DELETE FROM variants WHERE id = :id;`,
+		map[string]any{"id": id},
+	)
+	return err
+}
