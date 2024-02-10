@@ -28,9 +28,9 @@ func (v UpdateVariantGroup) ID() model.VariantGroupID     { return v.id }
 func (v UpdateVariantGroup) Name() model.VariantGroupName { return v.name }
 
 type VariantGroupRepository interface {
-	Select(context.Context, model.VariantID) (*model.Variant, error)
-	List(context.Context) (model.Variants, error)
-	Insert(context.Context, CreateVariant) (*model.Variant, error)
-	Update(context.Context, UpdateVariantGroup) (*model.Variant, error)
-	Delete(context.Context, model.VariantID) error
+	Select(context.Context, model.VariantGroupID) (*model.VariantGroup, error)
+	List(context.Context) (model.VariantGroups, error)
+	Insert(context.Context, CreateVariantGroup) (*model.VariantGroup, error)
+	Update(context.Context, UpdateVariantGroup) (*model.VariantGroup, error)
+	Delete(context.Context, model.VariantGroupID) error
 }
