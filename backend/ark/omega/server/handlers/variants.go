@@ -29,7 +29,7 @@ type VariantHandler interface {
 }
 
 type referenceParams struct {
-	variantID int `param:"id" validator:"required"`
+	VariantID int `param:"id" validator:"required"`
 }
 
 func (v Variant) Read(c echo.Context) error {
@@ -38,7 +38,7 @@ func (v Variant) Read(c echo.Context) error {
 		return err
 	}
 
-	variant, err := v.VariantUsecase.Find(c.Request().Context(), model.VariantID(params.variantID))
+	variant, err := v.VariantUsecase.Find(c.Request().Context(), model.VariantID(params.VariantID))
 	if err != nil {
 		return err
 	}
@@ -89,8 +89,9 @@ func (v Variant) Create(c echo.Context) error {
 }
 
 type updateBody struct {
-	GroupID int    `json:"group_id" validate:"required"`
-	Name    string `json:"name" validate:"required"`
+	VariantID int    `param:"id" validator:"required"`
+	GroupID   int    `json:"group_id" validate:"required"`
+	Name      string `json:"name" validate:"required"`
 }
 
 func (v Variant) Update(c echo.Context) error {
@@ -119,7 +120,7 @@ func (v Variant) Delete(c echo.Context) error {
 		return err
 	}
 
-	err := v.VariantUsecase.Delete(c.Request().Context(), model.VariantID(params.variantID))
+	err := v.VariantUsecase.Delete(c.Request().Context(), model.VariantID(params.VariantID))
 	if err != nil {
 		return err
 	}
