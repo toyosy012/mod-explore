@@ -17,18 +17,33 @@ func NewErrorHandler(s *echo.Echo) func(err error, c echo.Context) {
 			return
 		}
 
-	switch code {
-	case logic.InvalidArgument:
-		status = http.StatusBadRequest
-	case logic.NotFound:
-		status = http.StatusNotFound
-	case logic.Forbidden:
-		status = http.StatusForbidden
-	default:
-		status = http.StatusInternalServerError
-	}
-
-	if err = c.JSON(status, err.Error()); err != nil {
-		c.Logger().Error(err)
+		switch code {
+		case logic.InvalidArgument:
+			if err := c.JSON(http.StatusBadRequest, map[string]any{
+				"message": "bad request",
+			}); err != nil {
+				c.Logger().Error(err)
+			}
+			return
+		case logic.NotFound:
+			if err := c.JSON(http.StatusNotFound, map[string]any{
+				"message": "not found",
+			}); err != nil {
+				c.Logger().Error(err)
+			}
+			return
+		case logic.Forbidden:
+			if err := c.NoContent(http.StatusForbidden); err != nil {
+				if err != nil {
+					c.Logger().Error(err)
+				}
+			}
+		default:
+			if err := c.NoContent(http.StatusInternalServerError); err != nil {
+				if err != nil {
+					c.Logger().Error(err)
+				}
+			}
+		}
 	}
 }
