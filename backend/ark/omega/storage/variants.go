@@ -20,6 +20,13 @@ func NewVariantClient(dsn string) (service.VariantRepository, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	timeout, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	if err = db.PingContext(timeout); err != nil {
+		return nil, fmt.Errorf("connection timeout: %s ", err)
+	}
+
 	return VariantClient{
 		DB: db,
 	}, nil
