@@ -34,19 +34,24 @@ func NewVariantClient(dsn string) (service.VariantRepository, error) {
 
 // variantModel Listでも1度に取得されるレコード量は決まっているので、domain modelで異なるバインド用モデルを定義する
 type variantModel struct {
-	ID    int        `db:"id"`
-	Name  string     `db:"name"`
-	Group groupModel `db:"group"`
+	ID    int    `db:"id"`
+	Name  string `db:"name"`
+	Group string `db:"group"`
 }
 
 func (v VariantClient) FindVariant(ctx context.Context, id model.VariantID) (*model.Variant, error) {
-	query, args, err := v.BindNamed(`SELECT * FROM variants WHERE id = :id`, map[string]any{"id": id})
+	query, args, err := v.BindNamed(
+		`SELECT variants.id, variants.name, groups.name AS "group" FROM variants
+    INNER JOIN groups ON (variants.group_id = groups.id) WHERE variants.id = :id;`,
+		map[string]any{"id": id},
+	)
+
 	if err != nil {
 		return nil, err
 	}
 
 	var row variantModel
-	if err = v.GetContext(ctx, &row, query, args); errors.Is(err, sql.ErrNoRows) {
+	if err = v.GetContext(ctx, &row, query, args...); errors.Is(err, sql.ErrNoRows) {
 		return nil, service.NotFound
 	} else if err != nil {
 		return nil, err
@@ -54,7 +59,7 @@ func (v VariantClient) FindVariant(ctx context.Context, id model.VariantID) (*mo
 
 	var variant = model.NewVariant(
 		model.VariantID(row.ID),
-		model.GroupName(row.Group.Name),
+		model.GroupName(row.Group),
 		model.Name(row.Name),
 	)
 	return &variant, nil
