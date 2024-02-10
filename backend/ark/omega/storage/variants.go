@@ -115,7 +115,26 @@ func (v VariantClient) CreateVariant(ctx context.Context, create service.CreateV
 
 	return result, nil
 }
-func (v VariantClient) UpdateVariant(context.Context, service.UpdateVariant) (*model.Variant, error) {
-	return nil, nil
+
+func (v VariantClient) UpdateVariant(ctx context.Context, update service.UpdateVariant) (*model.Variant, error) {
+	query, args, err := v.BindNamed(
+		`UPDATE variants SET name = :name, group_id = :groupID, updated_at = NOW() WHERE id = :id RETURNING id;`,
+		map[string]any{"id": update.ID(), "name": update.Name(), "groupID": update.GroupID()},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = v.ExecContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := v.FindVariant(ctx, update.ID())
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 func (v VariantClient) DeleteVariant(context.Context, model.VariantID) error { return nil }
