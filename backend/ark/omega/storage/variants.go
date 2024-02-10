@@ -64,7 +64,33 @@ func (v VariantClient) FindVariant(ctx context.Context, id model.VariantID) (*mo
 	)
 	return &variant, nil
 }
-func (v VariantClient) ListVariants(context.Context) (model.Variants, error) { return nil, nil }
+
+func (v VariantClient) ListVariants(ctx context.Context) (model.Variants, error) {
+	query := `SELECT variants.id, variants.name, groups.name AS "group" FROM variants
+    INNER JOIN groups ON (variants.group_id = groups.id);`
+
+	var rows []variantModel
+	if err := v.SelectContext(ctx, &rows, query); errors.Is(err, sql.ErrNoRows) {
+		return nil, service.NotFound
+	} else if err != nil {
+		return nil, err
+	}
+
+	var results model.Variants
+	for _, r := range rows {
+		results = append(
+			results,
+			model.NewVariant(
+				model.VariantID(r.ID),
+				model.GroupName(r.Group),
+				model.Name(r.Name),
+			),
+		)
+	}
+
+	return results, nil
+}
+
 func (v VariantClient) CreateVariant(context.Context, service.CreateVariant) (*model.Variant, error) {
 	return nil, nil
 }
