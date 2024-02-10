@@ -41,7 +41,7 @@ func newServer(conf omega.DBConfig) (*echo.Echo, error) {
 	s.HideBanner = true
 	s.Use(middleware.Recover())
 	s.Use(middleware.CORS())
-	s.HTTPErrorHandler = handlers.ErrorHandler
+	s.HTTPErrorHandler = handlers.NewErrorHandler(s)
 
 	s.GET("/health", func(c echo.Context) error {
 		return c.String(http.StatusOK, "I'm fine!")
