@@ -13,26 +13,27 @@ var (
 )
 
 type CreateVariant struct {
-	group model.GroupName
-	name  model.Name
+	groupID model.GroupID
+	name    model.Name
 }
 
-func NewCreateVariant(group model.GroupName, name model.Name) CreateVariant {
-	return CreateVariant{group, name}
+func NewCreateVariant(groupID model.GroupID, name model.Name) CreateVariant {
+	return CreateVariant{groupID, name}
 }
-func (v CreateVariant) Group() model.GroupName { return v.group }
+func (v CreateVariant) GroupID() model.GroupID { return v.groupID }
 func (v CreateVariant) Name() model.Name       { return v.name }
 
 type UpdateVariant struct {
-	id    model.VariantID
-	group model.GroupName
-	name  model.Name
+	id      model.VariantID
+	groupID model.GroupID
+	name    model.Name
 }
 
-func NewUpdateVariant(id model.VariantID, group model.GroupName, name model.Name) UpdateVariant {
-	return UpdateVariant{id, group, name}
+func NewUpdateVariant(id model.VariantID, groupID model.GroupID, name model.Name) UpdateVariant {
+	return UpdateVariant{id, groupID, name}
 }
-func (v UpdateVariant) Group() model.GroupName { return v.group }
+
+func (v UpdateVariant) GroupID() model.GroupID { return v.groupID }
 func (v UpdateVariant) Name() model.Name       { return v.name }
 
 type VariantRepository interface {

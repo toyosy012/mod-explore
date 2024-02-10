@@ -3,6 +3,7 @@ package model
 type VariantID int
 
 type GroupName string
+type GroupID int
 
 type Name string
 

@@ -61,8 +61,8 @@ func (v Variant) List(c echo.Context) error {
 }
 
 type createBody struct {
-	Group string `json:"group" validate:"required"`
-	Name  string `json:"name" validate:"required"`
+	GroupID int    `json:"group_id" validate:"required"`
+	Name    string `json:"name" validate:"required"`
 }
 
 func (v Variant) Create(c echo.Context) error {
@@ -74,7 +74,7 @@ func (v Variant) Create(c echo.Context) error {
 	variant, err := v.VariantUsecase.Create(
 		c.Request().Context(),
 		service.NewCreateVariant(
-			model.GroupName(body.Group),
+			model.GroupID(body.GroupID),
 			model.Name(body.Name),
 		),
 	)
@@ -89,9 +89,8 @@ func (v Variant) Create(c echo.Context) error {
 }
 
 type updateBody struct {
-	ID    int    `json:"id" validate:"required"`
-	Group string `json:"group" validate:"required"`
-	Name  string `json:"name" validate:"required"`
+	GroupID int    `json:"group_id" validate:"required"`
+	Name    string `json:"name" validate:"required"`
 }
 
 func (v Variant) Update(c echo.Context) error {
@@ -102,7 +101,7 @@ func (v Variant) Update(c echo.Context) error {
 
 	variant, err := v.VariantUsecase.Update(
 		c.Request().Context(),
-		service.NewUpdateVariant(model.VariantID(body.ID), model.GroupName(body.Group), model.Name(body.Name)),
+		service.NewUpdateVariant(model.VariantID(body.VariantID), model.GroupID(body.GroupID), model.Name(body.Name)),
 	)
 	if err != nil {
 		return err
