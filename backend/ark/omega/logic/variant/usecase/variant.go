@@ -71,7 +71,15 @@ func (v Variant) Update(ctx context.Context, item service.UpdateVariant) (*model
 }
 
 func (v Variant) Delete(ctx context.Context, id model.VariantID) error {
-	err := v.repository.DeleteVariant(ctx, id)
+	_, err := v.repository.FindVariant(ctx, id)
+	if errors.Is(err, service.NotFound) {
+		return failure.New(logic.NotFound)
+	}
+	if err != nil {
+		return err
+	}
+
+	err = v.repository.DeleteVariant(ctx, id)
 	if err != nil {
 		if errors.Is(err, service.NotFound) {
 			return failure.New(logic.NotFound)
