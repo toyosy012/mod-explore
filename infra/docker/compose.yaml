@@ -1,0 +1,21 @@
+services:
+  database:
+    networks:
+      mod_explore_network:
+    image: postgres:16.1
+    container_name: omega-local-db
+    ports:
+      - "42731:5432"
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-invalid}
+      POSTGRES_DB: ${DB_DATABASE_NAME:-invalid}
+      POSTGRES_USER: ${DB_USERNAME:-invalid}
+    restart: always
+    pull_policy: always
+    cap_add:
+      - SYS_NICE
+networks:
+  mod_explore_network:
+    driver: bridge
+    ipam:
+      driver: default
