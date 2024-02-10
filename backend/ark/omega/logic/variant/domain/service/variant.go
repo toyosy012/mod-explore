@@ -2,14 +2,8 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	"mods-explore/ark/omega/logic/variant/domain/model"
-)
-
-var (
-	NotFound            = errors.New("not found")
-	IntervalServerError = errors.New("interval server error")
 )
 
 type CreateVariant struct {
