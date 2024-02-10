@@ -48,7 +48,7 @@ func newServer(conf omega.DBConfig) (*echo.Echo, error) {
 	})
 
 	postgresDSN := fmt.Sprintf(
-		"postgres://%s:%s@%s:%d/%s",
+		"postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		conf.DBUsername,
 		conf.DBPassword,
 		conf.DatabaseURL,
