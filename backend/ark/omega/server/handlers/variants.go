@@ -132,9 +132,9 @@ func (v Variant) Delete(c echo.Context) error {
 }
 
 type VariantValue struct {
-	ID    model.VariantID `json:"ID" validator:"required"`
-	Name  model.Name      `json:"Name" validator:"required"`
-	Group model.GroupName `json:"Group" validator:"required"`
+	ID    model.VariantID `json:"id" validator:"required"`
+	Name  model.Name      `json:"name" validator:"required"`
+	Group model.GroupName `json:"group" validator:"required"`
 }
 
 func NewVariantValue(v model.Variant) VariantValue {
