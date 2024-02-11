@@ -74,7 +74,7 @@ func (v Variant) Create(c echo.Context) error {
 	variant, err := v.VariantUsecase.Create(
 		c.Request().Context(),
 		service.NewCreateVariant(
-			model.GroupID(body.GroupID),
+			model.VariantGroupID(body.GroupID),
 			model.Name(body.Name),
 		),
 	)
@@ -102,7 +102,7 @@ func (v Variant) Update(c echo.Context) error {
 
 	variant, err := v.VariantUsecase.Update(
 		c.Request().Context(),
-		service.NewUpdateVariant(model.VariantID(body.VariantID), model.GroupID(body.GroupID), model.Name(body.Name)),
+		service.NewUpdateVariant(model.VariantID(body.VariantID), model.VariantGroupID(body.GroupID), model.Name(body.Name)),
 	)
 	if err != nil {
 		return err
@@ -132,9 +132,9 @@ func (v Variant) Delete(c echo.Context) error {
 }
 
 type VariantValue struct {
-	ID    model.VariantID `json:"id" validator:"required"`
-	Name  model.Name      `json:"name" validator:"required"`
-	Group model.GroupName `json:"group" validator:"required"`
+	ID    model.VariantID        `json:"id" validator:"required"`
+	Name  model.Name             `json:"name" validator:"required"`
+	Group model.VariantGroupName `json:"group" validator:"required"`
 }
 
 func NewVariantValue(v model.Variant) VariantValue {

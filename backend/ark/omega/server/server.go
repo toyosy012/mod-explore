@@ -71,5 +71,20 @@ func newServer(conf omega.DBConfig) (*echo.Echo, error) {
 		variantsV1.DELETE("/:id", handler.Delete)
 	}
 
+	variantGroupsV1 := s.Group("/api/v1/variant-groups")
+	{ // variant group
+		repoClient, err := storage.NewVariantGroupClient(postgresDSN)
+		if err != nil {
+			return nil, err
+		}
+
+		handler := handlers.NewVariantGroup(usecase.NewVariantGroup(repoClient))
+		variantGroupsV1.GET("/:id", handler.Read)
+		variantGroupsV1.GET("", handler.List)
+		variantGroupsV1.POST("/new", handler.Create)
+		variantGroupsV1.PUT("/:id", handler.Update)
+		variantGroupsV1.DELETE("/:id", handler.Delete)
+	}
+
 	return s, nil
 }

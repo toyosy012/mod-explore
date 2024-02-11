@@ -61,7 +61,7 @@ func (v VariantClient) FindVariant(ctx context.Context, id model.VariantID) (*mo
 
 	var variant = model.NewVariant(
 		model.VariantID(row.ID),
-		model.GroupName(row.Group),
+		model.VariantGroupName(row.Group),
 		model.Name(row.Name),
 	)
 	return &variant, nil
@@ -84,7 +84,7 @@ func (v VariantClient) ListVariants(ctx context.Context) (model.Variants, error)
 			results,
 			model.NewVariant(
 				model.VariantID(r.ID),
-				model.GroupName(r.Group),
+				model.VariantGroupName(r.Group),
 				model.Name(r.Name),
 			),
 		)

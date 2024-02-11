@@ -8,9 +8,9 @@ import (
 )
 
 var (
-	cosmic   = model.GroupName("Cosmic")
+	cosmic   = model.VariantGroupName("Cosmic")
 	cosmicID = model.VariantID(1)
-	nature   = model.GroupName("Nature")
+	nature   = model.VariantGroupName("Nature")
 	natureID = model.VariantID(2)
 )
 
