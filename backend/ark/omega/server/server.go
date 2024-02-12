@@ -2,7 +2,9 @@ package server
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -56,9 +58,14 @@ func newServer(conf omega.DBConfig) (*echo.Echo, error) {
 		conf.DatabaseName,
 	)
 
+	db, err := storage.NewPostgres(postgresDSN)
+	if err != nil {
+		return nil, err
+	}
+
 	variantsV1 := s.Group("/api/v1/variants")
 	{ // variant
-		repoClient, err := storage.NewVariantClient(postgresDSN)
+		repoClient, err := storage.NewVariantClient(db, slog.New(slog.NewJSONHandler(os.Stdout, nil)))
 		if err != nil {
 			return nil, err
 		}
