@@ -80,7 +80,7 @@ func newServer(conf omega.DBConfig) (*echo.Echo, error) {
 
 	variantGroupsV1 := s.Group("/api/v1/variant-groups")
 	{ // variant group
-		repoClient, err := storage.NewVariantGroupClient(postgresDSN)
+		repoClient, err := storage.NewVariantGroupClient(db, slog.New(slog.NewJSONHandler(os.Stdout, nil)))
 		if err != nil {
 			return nil, err
 		}
