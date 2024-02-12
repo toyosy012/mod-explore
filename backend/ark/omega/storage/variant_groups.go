@@ -2,57 +2,41 @@ package storage
 
 import (
 	"context"
-	"database/sql"
-	"errors"
-	"fmt"
-	"time"
-
 	"github.com/jmoiron/sqlx"
+	"log/slog"
 
 	"mods-explore/ark/omega/logic/variant/domain/model"
 	"mods-explore/ark/omega/logic/variant/domain/service"
 )
 
 // GroupVariantModel variantsに集約しても良さそうだったがgroups単体で取り扱う可能性があるので分離しておく
-type groupVariantModel struct {
-	ID   uint8  `db:"id"`
+type variantGroupModel struct {
+	ID   int    `db:"id"`
 	Name string `db:"name"`
 }
 
 type VariantGroupClient struct {
-	*sqlx.DB
+	*Client[variantGroupModel, int]
 }
 
-func NewVariantGroupClient(dsn string) (service.VariantGroupRepository, error) {
-	db, err := sqlx.Open("postgres", dsn)
+func NewVariantGroupClient(db *sqlx.DB, logger *slog.Logger) (service.VariantGroupRepository, error) {
+	cli, err := NewSQLxClient[variantGroupModel, int](db, logger)
 	if err != nil {
 		return nil, err
 	}
 
-	timeout, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-	if err = db.PingContext(timeout); err != nil {
-		return nil, fmt.Errorf("connection timeout: %s ", err)
-	}
-
 	return VariantGroupClient{
-		DB: db,
+		cli,
 	}, nil
 }
 
 func (v VariantGroupClient) Select(ctx context.Context, id model.VariantGroupID) (*model.VariantGroup, error) {
-	query, args, err := v.BindNamed(
+	row, err := v.NamedGet(
+		ctx,
 		`SELECT id, name FROM groups WHERE id = :id;`,
 		map[string]any{"id": id},
 	)
 	if err != nil {
-		return nil, err
-	}
-
-	var row groupVariantModel
-	if err = v.GetContext(ctx, &row, query, args...); errors.Is(err, sql.ErrNoRows) {
-		return nil, service.NotFound
-	} else if err != nil {
 		return nil, err
 	}
 
@@ -64,12 +48,11 @@ func (v VariantGroupClient) Select(ctx context.Context, id model.VariantGroupID)
 }
 
 func (v VariantGroupClient) List(ctx context.Context) (model.VariantGroups, error) {
-	query := `SELECT id, name FROM groups;`
-
-	var rows []groupVariantModel
-	if err := v.SelectContext(ctx, &rows, query); errors.Is(err, sql.ErrNoRows) {
-		return nil, service.NotFound
-	} else if err != nil {
+	rows, err := v.NamedSelect(
+		ctx,
+		`SELECT id, name FROM groups;`,
+	)
+	if err != nil {
 		return nil, err
 	}
 
@@ -88,18 +71,11 @@ func (v VariantGroupClient) List(ctx context.Context) (model.VariantGroups, erro
 }
 
 func (v VariantGroupClient) Insert(ctx context.Context, create service.CreateVariantGroup) (*model.VariantGroup, error) {
-	stmt, err := v.PrepareNamedContext(
+	id, err := v.NamedStore(
 		ctx,
 		`INSERT INTO groups (name) VALUES (:name) RETURNING id;`,
+		map[string]any{"name": create.Name()},
 	)
-	if err != nil {
-		return nil, err
-	}
-
-	var id int
-	err = stmt.
-		QueryRowxContext(ctx, map[string]any{"name": create.Name()}).
-		Scan(&id)
 	if err != nil {
 		return nil, err
 	}
@@ -113,15 +89,11 @@ func (v VariantGroupClient) Insert(ctx context.Context, create service.CreateVar
 }
 
 func (v VariantGroupClient) Update(ctx context.Context, update service.UpdateVariantGroup) (*model.VariantGroup, error) {
-	query, args, err := v.BindNamed(
-		`UPDATE groups SET name = :name, updated_at = NOW() WHERE id = :id RETURNING id;`,
+	_, err := v.NamedStore(
+		ctx,
+		`UPDATE groups SET name = :name, updated_at = NOW() WHERE id = :id;`,
 		map[string]any{"id": update.ID(), "name": update.Name()},
 	)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = v.ExecContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -134,10 +106,5 @@ func (v VariantGroupClient) Update(ctx context.Context, update service.UpdateVar
 	return result, nil
 }
 func (v VariantGroupClient) Delete(ctx context.Context, id model.VariantGroupID) error {
-	_, err := v.NamedExecContext(
-		ctx,
-		`DELETE FROM groups WHERE id = :id;`,
-		map[string]any{"id": id},
-	)
-	return err
+	return v.NamedDelete(ctx, `DELETE FROM groups WHERE id = :id;`, map[string]any{"id": id})
 }
