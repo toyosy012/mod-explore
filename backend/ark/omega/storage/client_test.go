@@ -46,13 +46,13 @@ func (s *TestClientSuite) SetupSuite() {
 		conf.DatabaseName,
 	)
 
-	sqlxCli, err := NewPostgres(dsn)
+	sqlxCli, err := ConnectPostgres(dsn)
 	if err != nil {
 		s.T().Log(fmt.Printf("error sqlx initialization: %s", err.Error()))
 		return
 	}
 
-	{ // up migration
+	{ // migration up
 		driver, err := postgres.WithInstance(sqlxCli.DB, &postgres.Config{})
 		if err != nil {
 			s.T().Log(fmt.Printf("error getting driver: %s", err.Error()))
@@ -73,7 +73,7 @@ func (s *TestClientSuite) SetupSuite() {
 		s.T().Log("create table: test")
 	}
 
-	s.cli, err = Connect[testModel, int](
+	s.cli, err = NewSQLxClient[testModel, int](
 		sqlxCli,
 		slog.New(slog.NewJSONHandler(os.Stdout, nil)),
 	)
@@ -85,7 +85,7 @@ func (s *TestClientSuite) SetupSuite() {
 }
 
 func (s *TestClientSuite) TearDownSuite() {
-	{ // migration
+	{ // migration down
 		driver, err := postgres.WithInstance(s.cli.DB.DB, &postgres.Config{})
 		if err != nil {
 			s.T().Log(fmt.Printf("error getting driver: %s", err.Error()))

@@ -18,7 +18,7 @@ type Client[T any, ID any] struct {
 	logger *slog.Logger
 }
 
-func Connect[T any, ID any](db *sqlx.DB, logger *slog.Logger) (_ *Client[T, ID], err error) {
+func NewSQLxClient[T any, ID any](db *sqlx.DB, logger *slog.Logger) (_ *Client[T, ID], err error) {
 	if logger == nil {
 		logger = slog.Default()
 	}

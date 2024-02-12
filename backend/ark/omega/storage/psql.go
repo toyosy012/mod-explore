@@ -9,7 +9,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func NewPostgres(dsn string) (db *sqlx.DB, err error) {
+func ConnectPostgres(dsn string) (db *sqlx.DB, err error) {
 	ctx := context.Background()
 	{
 		timeout, cancel := context.WithTimeout(ctx, 5*time.Second)

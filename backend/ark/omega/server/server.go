@@ -58,7 +58,7 @@ func newServer(conf omega.DBConfig) (*echo.Echo, error) {
 		conf.DatabaseName,
 	)
 
-	db, err := storage.NewPostgres(postgresDSN)
+	db, err := storage.ConnectPostgres(postgresDSN)
 	if err != nil {
 		return nil, err
 	}

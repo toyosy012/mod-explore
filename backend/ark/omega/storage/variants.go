@@ -15,7 +15,7 @@ type VariantClient struct {
 }
 
 func NewVariantClient(db *sqlx.DB, logger *slog.Logger) (service.VariantRepository, error) {
-	cli, err := Connect[variantModel, int](db, logger)
+	cli, err := NewSQLxClient[variantModel, int](db, logger)
 	if err != nil {
 		return nil, err
 	}
