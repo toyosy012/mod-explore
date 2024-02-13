@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"mods-explore/ark/omega/storage"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -44,6 +45,17 @@ func NewErrorHandler(s *echo.Echo) func(err error, c echo.Context) {
 					c.Logger().Error(err)
 				}
 			}
+		}
+	}
+}
+
+func Transctioner[T any, ID any](cli *storage.Client[T, ID]) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			ctx := c.Request().Context()
+			ctx = logic.SetTransactioner(ctx, cli)
+			c.SetRequest(c.Request().WithContext(ctx))
+			return next(c)
 		}
 	}
 }
