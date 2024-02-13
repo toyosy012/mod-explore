@@ -55,38 +55,44 @@ func (v Variant) List(ctx context.Context) (model.Variants, error) {
 }
 
 func (v Variant) Create(ctx context.Context, item service.CreateVariant) (*model.Variant, error) {
-	variant, err := v.repository.CreateVariant(ctx, item)
-	if err != nil {
-		return nil, failure.Wrap(err)
-	}
-	return variant, nil
+	return logic.UseTransactioner(ctx, func(ctx context.Context) (*model.Variant, error) {
+		variant, err := v.repository.CreateVariant(ctx, item)
+		if err != nil {
+			return nil, failure.Wrap(err)
+		}
+		return variant, nil
+	})
 }
 
 func (v Variant) Update(ctx context.Context, item service.UpdateVariant) (*model.Variant, error) {
-	variant, err := v.repository.UpdateVariant(ctx, item)
-	if err != nil {
-		return nil, failure.Wrap(err)
-	}
-	return variant, nil
+	return logic.UseTransactioner(ctx, func(ctx context.Context) (*model.Variant, error) {
+		variant, err := v.repository.UpdateVariant(ctx, item)
+		if err != nil {
+			return nil, failure.Wrap(err)
+		}
+		return variant, nil
+	})
 }
 
 func (v Variant) Delete(ctx context.Context, id model.VariantID) error {
-	_, err := v.repository.FindVariant(ctx, id)
-	if errors.Is(err, service.NotFound) {
-		return failure.New(logic.NotFound)
-	}
-	if err != nil {
-		return err
-	}
-
-	err = v.repository.DeleteVariant(ctx, id)
-	if err != nil {
+	return logic.UseTransactioner0(ctx, func(ctx context.Context) error {
+		_, err := v.repository.FindVariant(ctx, id)
 		if errors.Is(err, service.NotFound) {
 			return failure.New(logic.NotFound)
-		} else if errors.Is(err, service.IntervalServerError) {
-			return failure.New(logic.IntervalServerError)
 		}
-		return failure.Wrap(err)
-	}
-	return nil
+		if err != nil {
+			return err
+		}
+
+		err = v.repository.DeleteVariant(ctx, id)
+		if err != nil {
+			if errors.Is(err, service.NotFound) {
+				return failure.New(logic.NotFound)
+			} else if errors.Is(err, service.IntervalServerError) {
+				return failure.New(logic.IntervalServerError)
+			}
+			return failure.Wrap(err)
+		}
+		return nil
+	})
 }
