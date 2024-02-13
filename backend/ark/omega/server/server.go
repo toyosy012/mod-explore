@@ -70,6 +70,7 @@ func newServer(conf omega.DBConfig) (*echo.Echo, error) {
 			return nil, err
 		}
 
+		variantsV1.Use(handlers.Transctioner(repoClient.(storage.VariantClient).Client))
 		handler := handlers.NewVariant(usecase.NewVariant(repoClient))
 		variantsV1.GET("/:id", handler.Read)
 		variantsV1.GET("", handler.List)
@@ -85,6 +86,7 @@ func newServer(conf omega.DBConfig) (*echo.Echo, error) {
 			return nil, err
 		}
 
+		variantsV1.Use(handlers.Transctioner(repoClient.(storage.VariantGroupClient).Client))
 		handler := handlers.NewVariantGroup(usecase.NewVariantGroup(repoClient))
 		variantGroupsV1.GET("/:id", handler.Read)
 		variantGroupsV1.GET("", handler.List)

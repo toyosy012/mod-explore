@@ -8,7 +8,7 @@ type Transactioner interface {
 
 type txerKey struct{}
 
-func SetTransctioner(ctx context.Context, tx Transactioner) context.Context {
+func SetTransactioner(ctx context.Context, tx Transactioner) context.Context {
 	return context.WithValue(ctx, txerKey{}, tx)
 }
 
