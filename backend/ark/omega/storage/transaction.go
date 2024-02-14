@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
+
+	"mods-explore/ark/omega/logic/variant/domain/service"
 )
 
 func (c *Client[T, ID]) WithTransaction(ctx context.Context, fn func(context.Context) (any, error)) (_ any, err error) {
@@ -23,7 +25,8 @@ func (c *Client[T, ID]) WithTransaction(ctx context.Context, fn func(context.Con
 			if err = tx.Rollback(); err != nil {
 				c.logger.ErrorContext(ctx, "failed to rollback transaction in panic", slog.Any("error", err))
 			}
-			panic(p) // rethrow
+			err = service.IntervalServerError
+			return
 		}
 		if err != nil {
 			if err = tx.Rollback(); err != nil {
