@@ -18,7 +18,7 @@ func (c *Client[T, ID]) WithTransaction(ctx context.Context, fn func(context.Con
 		return nil, err
 	}
 
-	defer func() {
+	defer func(err error) {
 		if p := recover(); p != nil {
 			if err = tx.Rollback(); err != nil {
 				c.logger.ErrorContext(ctx, "failed to rollback transaction in panic", slog.Any("error", err))
@@ -34,7 +34,7 @@ func (c *Client[T, ID]) WithTransaction(ctx context.Context, fn func(context.Con
 		if err = tx.Commit(); err != nil {
 			c.logger.ErrorContext(ctx, "failed to commit transaction", slog.Any("error", err))
 		}
-	}()
+	}(err)
 
 	return fn(SetTx(timeout, tx))
 }
