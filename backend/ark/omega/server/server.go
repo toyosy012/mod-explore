@@ -60,20 +60,20 @@ func newServer(conf omega.DBConfig) (*echo.Echo, error) {
 		conf.DatabaseName,
 	)
 
-	db, err := storage.ConnectPostgres(postgresDSN)
+	injector, err := Wired(postgresDSN)
 	if err != nil {
 		return nil, err
 	}
 
 	variantsV1 := s.Group("/api/v1/variants")
 	{ // variant
-		repoClient, err := storage.NewVariantClient(db, slog.New(slog.NewJSONHandler(os.Stdout, nil)))
-		if err != nil {
-			return nil, err
-		}
-
-		variantsV1.Use(handlers.Transctioner(repoClient.(storage.VariantClient).Client))
-		handler := handlers.NewVariant(usecase.NewVariant(repoClient))
+		variantsV1.Use(
+			handlers.Transctioner(
+				do.MustInvoke[service.VariantRepository](injector).(storage.VariantClient).Client,
+			),
+		)
+		variant := do.MustInvoke[usecase.VariantUsecase](injector)
+		handler := handlers.NewVariant(variant)
 		variantsV1.GET("/:id", handler.Read)
 		variantsV1.GET("", handler.List)
 		variantsV1.POST("/new", handler.Create)
@@ -83,13 +83,13 @@ func newServer(conf omega.DBConfig) (*echo.Echo, error) {
 
 	variantGroupsV1 := s.Group("/api/v1/variant-groups")
 	{ // variant group
-		repoClient, err := storage.NewVariantGroupClient(db, slog.New(slog.NewJSONHandler(os.Stdout, nil)))
-		if err != nil {
-			return nil, err
-		}
-
-		variantsV1.Use(handlers.Transctioner(repoClient.(storage.VariantGroupClient).Client))
-		handler := handlers.NewVariantGroup(usecase.NewVariantGroup(repoClient))
+		variantsV1.Use(
+			handlers.Transctioner(
+				do.MustInvoke[service.VariantGroupRepository](injector).(storage.VariantGroupClient).Client,
+			),
+		)
+		variantGroup := do.MustInvoke[usecase.VariantGroupUsecase](injector)
+		handler := handlers.NewVariantGroup(variantGroup)
 		variantGroupsV1.GET("/:id", handler.Read)
 		variantGroupsV1.GET("", handler.List)
 		variantGroupsV1.POST("/new", handler.Create)
