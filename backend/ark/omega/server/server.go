@@ -8,9 +8,11 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/samber/do"
 	"github.com/sirupsen/logrus"
 
 	"mods-explore/ark/omega"
+	"mods-explore/ark/omega/logic/variant/domain/service"
 	"mods-explore/ark/omega/logic/variant/usecase"
 	"mods-explore/ark/omega/server/handlers"
 	"mods-explore/ark/omega/storage"
@@ -96,4 +98,29 @@ func newServer(conf omega.DBConfig) (*echo.Echo, error) {
 	}
 
 	return s, nil
+}
+
+func Wired(postgresDSN string) (*do.Injector, error) {
+	injector := do.New()
+
+	db, err := storage.ConnectPostgres(postgresDSN)
+	if err != nil {
+		return nil, err
+	}
+
+	variantRepo, err := storage.NewVariantClient(db, slog.New(slog.NewJSONHandler(os.Stdout, nil)))
+	if err != nil {
+		return nil, err
+	}
+	do.ProvideValue(injector, variantRepo)
+	do.Provide(injector, usecase.NewVariant)
+
+	variantGroupRepo, err := storage.NewVariantGroupClient(db, slog.New(slog.NewJSONHandler(os.Stdout, nil)))
+	if err != nil {
+		return nil, err
+	}
+	do.ProvideValue(injector, variantGroupRepo)
+	do.Provide(injector, usecase.NewVariantGroup)
+
+	return injector, nil
 }
