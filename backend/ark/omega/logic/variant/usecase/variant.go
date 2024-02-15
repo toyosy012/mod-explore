@@ -66,6 +66,13 @@ func (v Variant) Create(ctx context.Context, item service.CreateVariant) (*model
 
 func (v Variant) Update(ctx context.Context, item service.UpdateVariant) (*model.Variant, error) {
 	return logic.UseTransactioner(ctx, func(ctx context.Context) (*model.Variant, error) {
+		if _, err := v.repository.FindVariant(ctx, item.ID()); err != nil {
+			if errors.Is(err, service.NotFound) {
+				return nil, failure.New(logic.NotFound)
+			}
+			return nil, failure.Wrap(err)
+		}
+
 		variant, err := v.repository.UpdateVariant(ctx, item)
 		if err != nil {
 			return nil, failure.Wrap(err)
