@@ -1,13 +1,14 @@
 package handlers
 
 import (
-	"mods-explore/ark/omega/storage"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"github.com/morikuni/failure"
+	"github.com/samber/do"
 
 	"mods-explore/ark/omega/logic"
+	"mods-explore/ark/omega/storage"
 )
 
 func NewErrorHandler(s *echo.Echo) func(err error, c echo.Context) {
@@ -49,11 +50,11 @@ func NewErrorHandler(s *echo.Echo) func(err error, c echo.Context) {
 	}
 }
 
-func Transctioner[T any, ID any](cli *storage.Client[T, ID]) echo.MiddlewareFunc {
+func Transctioner[T any, ID any](injector *do.Injector) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			ctx := c.Request().Context()
-			ctx = logic.SetTransactioner(ctx, cli)
+			ctx = logic.SetTransactioner(ctx, do.MustInvoke[*storage.Client[T, ID]](injector))
 			c.SetRequest(c.Request().WithContext(ctx))
 			return next(c)
 		}

@@ -13,7 +13,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"mods-explore/ark/omega"
-	"mods-explore/ark/omega/logic/variant/domain/service"
 	"mods-explore/ark/omega/logic/variant/usecase"
 	"mods-explore/ark/omega/server/handlers"
 	"mods-explore/ark/omega/storage"
@@ -49,13 +48,11 @@ func newServer(injector *do.Injector) (*echo.Echo, error) {
 		return c.String(http.StatusOK, "I'm fine!")
 	})
 
-	variantsV1 := s.Group("/api/v1/variants")
+	variantsV1 := s.Group(
+		"/api/v1/variants",
+		handlers.Transctioner[storage.VariantModel, int](injector),
+	)
 	{ // variant
-		variantsV1.Use(
-			handlers.Transctioner(
-				do.MustInvoke[service.VariantRepository](injector).(storage.VariantClient).Client,
-			),
-		)
 		handler := do.MustInvoke[handlers.VariantHandler](injector)
 		variantsV1.GET("/:id", handler.Read)
 		variantsV1.GET("", handler.List)
@@ -64,13 +61,11 @@ func newServer(injector *do.Injector) (*echo.Echo, error) {
 		variantsV1.DELETE("/:id", handler.Delete)
 	}
 
-	variantGroupsV1 := s.Group("/api/v1/variant-groups")
+	variantGroupsV1 := s.Group(
+		"/api/v1/variant-groups",
+		handlers.Transctioner[storage.VariantGroupModel, int](injector),
+	)
 	{ // variant group
-		variantsV1.Use(
-			handlers.Transctioner(
-				do.MustInvoke[service.VariantGroupRepository](injector).(storage.VariantGroupClient).Client,
-			),
-		)
 		handler := do.MustInvoke[handlers.VariantGroupHandler](injector)
 		variantGroupsV1.GET("/:id", handler.Read)
 		variantGroupsV1.GET("", handler.List)
