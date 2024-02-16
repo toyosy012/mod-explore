@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/samber/do"
@@ -89,33 +90,28 @@ func Wired() (*do.Injector, error) {
 		return *conf, err
 	})
 
-	env := do.MustInvoke[omega.Environments](injector)
-	postgresDSN := fmt.Sprintf(
-		"postgres://%s:%s@%s:%d/%s?sslmode=disable",
-		env.DBUsername,
-		env.DBPassword,
-		env.DatabaseURL,
-		env.Port,
-		env.DatabaseName,
-	)
-	db, err := storage.ConnectPostgres(postgresDSN)
-	if err != nil {
-		return nil, err
-	}
+	do.Provide(injector, func(i *do.Injector) (*sqlx.DB, error) {
+		env := do.MustInvoke[omega.Environments](i)
+		dns := fmt.Sprintf(
+			"postgres://%s:%s@%s:%d/%s?sslmode=disable",
+			env.DBUsername,
+			env.DBPassword,
+			env.DatabaseURL,
+			env.Port,
+			env.DatabaseName,
+		)
+		return storage.ConnectPostgres(dns)
+	})
 
-	variantRepo, err := storage.NewVariantClient(db, slog.New(slog.NewJSONHandler(os.Stdout, nil)))
-	if err != nil {
-		return nil, err
-	}
-	do.ProvideValue(injector, variantRepo)
+	do.ProvideValue(injector, slog.New(slog.NewJSONHandler(os.Stdout, nil)))
+
+	do.Provide(injector, storage.NewSQLxClient[storage.VariantModel, int])
+	do.Provide(injector, storage.NewVariantClient)
 	do.Provide(injector, usecase.NewVariant)
 	do.Provide(injector, handlers.NewVariant)
 
-	variantGroupRepo, err := storage.NewVariantGroupClient(db, slog.New(slog.NewJSONHandler(os.Stdout, nil)))
-	if err != nil {
-		return nil, err
-	}
-	do.ProvideValue(injector, variantGroupRepo)
+	do.Provide(injector, storage.NewSQLxClient[storage.VariantGroupModel, int])
+	do.Provide(injector, storage.NewVariantGroupClient)
 	do.Provide(injector, usecase.NewVariantGroup)
 	do.Provide(injector, handlers.NewVariantGroup)
 
