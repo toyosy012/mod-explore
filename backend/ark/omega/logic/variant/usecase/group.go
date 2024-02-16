@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/morikuni/failure"
+	"github.com/samber/do"
 
 	"mods-explore/ark/omega/logic"
 	"mods-explore/ark/omega/logic/variant/domain/model"
@@ -23,10 +24,10 @@ type VariantGroup struct {
 	repository service.VariantGroupRepository
 }
 
-func NewVariantGroup(repo service.VariantGroupRepository) VariantGroupUsecase {
-	return VariantGroup{
-		repository: repo,
-	}
+func NewVariantGroup(injector *do.Injector) (VariantGroupUsecase, error) {
+	return &VariantGroup{
+		repository: do.MustInvoke[service.VariantGroupRepository](injector),
+	}, nil
 }
 
 func (v VariantGroup) Find(ctx context.Context, id model.VariantGroupID) (*model.VariantGroup, error) {

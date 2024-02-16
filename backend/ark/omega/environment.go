@@ -2,12 +2,13 @@ package omega
 
 import "github.com/kelseyhightower/envconfig"
 
-type config interface {
-	DBConfig | ServerConfig
+type Environments struct {
+	DBConfig
+	ServerConfig
 }
 
-func LoadConfig[T config]() (*T, error) {
-	var cfg T
+func LoadConfig() (*Environments, error) {
+	var cfg Environments
 	if err := envconfig.Process("", &cfg); err != nil {
 		return nil, err
 	}

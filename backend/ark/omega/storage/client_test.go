@@ -10,6 +10,8 @@ import (
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/jmoiron/sqlx"
+	"github.com/samber/do"
 	"github.com/stretchr/testify/suite"
 
 	"mods-explore/ark/omega"
@@ -31,29 +33,35 @@ func TestTestClientSuite(t *testing.T) {
 }
 
 func (s *TestClientSuite) SetupSuite() {
-	conf, err := omega.LoadConfig[omega.DBConfig]()
-	if err != nil {
-		s.T().Log(fmt.Printf("error load db config: %s", err.Error()))
-		return
+	injector := do.New()
+	{
+
+		do.Provide(injector, func(_ *do.Injector) (omega.Environments, error) {
+			conf, err := omega.LoadConfig()
+			return *conf, err
+		})
+		do.ProvideValue(injector, slog.New(slog.NewJSONHandler(os.Stdout, nil)))
+
+		do.Provide(injector, func(i *do.Injector) (*sqlx.DB, error) {
+			env := do.MustInvoke[omega.Environments](i)
+			postgresDSN := fmt.Sprintf(
+				"postgres://%s:%s@%s:%d/%s?sslmode=disable",
+				env.DBUsername,
+				env.DBPassword,
+				env.DatabaseURL,
+				env.Port,
+				env.DatabaseName,
+			)
+			return ConnectPostgres(postgresDSN)
+		})
+
+		do.Provide(injector, NewSQLxClient[testModel, int])
 	}
 
-	dsn := fmt.Sprintf(
-		"postgres://%s:%s@%s:%d/%s?sslmode=disable",
-		conf.DBUsername,
-		conf.DBPassword,
-		conf.DatabaseURL,
-		conf.Port,
-		conf.DatabaseName,
-	)
-
-	sqlxCli, err := ConnectPostgres(dsn)
-	if err != nil {
-		s.T().Log(fmt.Printf("error sqlx initialization: %s", err.Error()))
-		return
-	}
-
+	db := do.MustInvoke[*Client[testModel, int]](injector)
+	s.cli = db
 	{ // migration up
-		driver, err := postgres.WithInstance(sqlxCli.DB, &postgres.Config{})
+		driver, err := postgres.WithInstance(db.DB.DB, &postgres.Config{})
 		if err != nil {
 			s.T().Log(fmt.Printf("error getting driver: %s", err.Error()))
 			return
@@ -72,16 +80,6 @@ func (s *TestClientSuite) SetupSuite() {
 		}
 		s.T().Log("create table: test")
 	}
-
-	s.cli, err = NewSQLxClient[testModel, int](
-		sqlxCli,
-		slog.New(slog.NewJSONHandler(os.Stdout, nil)),
-	)
-	if err != nil {
-		s.T().Log(fmt.Printf("error connection db: %s", err.Error()))
-		return
-	}
-
 }
 
 func (s *TestClientSuite) TearDownSuite() {

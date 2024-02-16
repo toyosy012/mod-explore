@@ -2,31 +2,26 @@ package storage
 
 import (
 	"context"
-	"github.com/jmoiron/sqlx"
-	"log/slog"
+
+	"github.com/samber/do"
 
 	"mods-explore/ark/omega/logic/variant/domain/model"
 	"mods-explore/ark/omega/logic/variant/domain/service"
 )
 
-// GroupVariantModel variantsに集約しても良さそうだったがgroups単体で取り扱う可能性があるので分離しておく
-type variantGroupModel struct {
+// VariantGroupModel variantsに集約しても良さそうだったがgroups単体で取り扱う可能性があるので分離しておく
+type VariantGroupModel struct {
 	ID   int    `db:"id"`
 	Name string `db:"name"`
 }
 
 type VariantGroupClient struct {
-	*Client[variantGroupModel, int]
+	*Client[VariantGroupModel, int]
 }
 
-func NewVariantGroupClient(db *sqlx.DB, logger *slog.Logger) (service.VariantGroupRepository, error) {
-	cli, err := NewSQLxClient[variantGroupModel, int](db, logger)
-	if err != nil {
-		return nil, err
-	}
-
+func NewVariantGroupClient(injector *do.Injector) (service.VariantGroupRepository, error) {
 	return VariantGroupClient{
-		cli,
+		do.MustInvoke[*Client[VariantGroupModel, int]](injector),
 	}, nil
 }
 

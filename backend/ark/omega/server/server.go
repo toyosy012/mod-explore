@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/samber/do"
 	"github.com/sirupsen/logrus"
 
 	"mods-explore/ark/omega"
@@ -17,28 +19,25 @@ import (
 )
 
 func Run() {
-	dbConf, err := omega.LoadConfig[omega.DBConfig]()
-	if err != nil {
-		logrus.Fatal(err)
-		return
-	}
-	serverConf, err := omega.LoadConfig[omega.ServerConfig]()
-	if err != nil {
-		logrus.Fatal(err)
-		return
-	}
-	s, err := newServer(*dbConf)
+	injector, err := Wired()
 	if err != nil {
 		logrus.Fatal(err)
 		return
 	}
 
-	if err = s.Start(serverConf.Address); err != nil {
+	s, err := newServer(injector)
+	if err != nil {
+		logrus.Fatal(err)
+		return
+	}
+
+	env := do.MustInvoke[omega.Environments](injector)
+	if err = s.Start(env.Address); err != nil {
 		logrus.Fatal(err)
 	}
 }
 
-func newServer(conf omega.DBConfig) (*echo.Echo, error) {
+func newServer(injector *do.Injector) (*echo.Echo, error) {
 	s := echo.New()
 	s.HideBanner = true
 	s.Use(middleware.Recover())
@@ -49,29 +48,12 @@ func newServer(conf omega.DBConfig) (*echo.Echo, error) {
 		return c.String(http.StatusOK, "I'm fine!")
 	})
 
-	postgresDSN := fmt.Sprintf(
-		"postgres://%s:%s@%s:%d/%s?sslmode=disable",
-		conf.DBUsername,
-		conf.DBPassword,
-		conf.DatabaseURL,
-		conf.Port,
-		conf.DatabaseName,
+	variantsV1 := s.Group(
+		"/api/v1/variants",
+		handlers.Transctioner[storage.VariantModel, int](injector),
 	)
-
-	db, err := storage.ConnectPostgres(postgresDSN)
-	if err != nil {
-		return nil, err
-	}
-
-	variantsV1 := s.Group("/api/v1/variants")
 	{ // variant
-		repoClient, err := storage.NewVariantClient(db, slog.New(slog.NewJSONHandler(os.Stdout, nil)))
-		if err != nil {
-			return nil, err
-		}
-
-		variantsV1.Use(handlers.Transctioner(repoClient.(storage.VariantClient).Client))
-		handler := handlers.NewVariant(usecase.NewVariant(repoClient))
+		handler := do.MustInvoke[handlers.VariantHandler](injector)
 		variantsV1.GET("/:id", handler.Read)
 		variantsV1.GET("", handler.List)
 		variantsV1.POST("/new", handler.Create)
@@ -79,15 +61,12 @@ func newServer(conf omega.DBConfig) (*echo.Echo, error) {
 		variantsV1.DELETE("/:id", handler.Delete)
 	}
 
-	variantGroupsV1 := s.Group("/api/v1/variant-groups")
+	variantGroupsV1 := s.Group(
+		"/api/v1/variant-groups",
+		handlers.Transctioner[storage.VariantGroupModel, int](injector),
+	)
 	{ // variant group
-		repoClient, err := storage.NewVariantGroupClient(db, slog.New(slog.NewJSONHandler(os.Stdout, nil)))
-		if err != nil {
-			return nil, err
-		}
-
-		variantsV1.Use(handlers.Transctioner(repoClient.(storage.VariantGroupClient).Client))
-		handler := handlers.NewVariantGroup(usecase.NewVariantGroup(repoClient))
+		handler := do.MustInvoke[handlers.VariantGroupHandler](injector)
 		variantGroupsV1.GET("/:id", handler.Read)
 		variantGroupsV1.GET("", handler.List)
 		variantGroupsV1.POST("/new", handler.Create)
@@ -96,4 +75,40 @@ func newServer(conf omega.DBConfig) (*echo.Echo, error) {
 	}
 
 	return s, nil
+}
+
+func Wired() (*do.Injector, error) {
+	injector := do.New()
+
+	do.Provide(injector, func(_ *do.Injector) (omega.Environments, error) {
+		conf, err := omega.LoadConfig()
+		return *conf, err
+	})
+
+	do.Provide(injector, func(i *do.Injector) (*sqlx.DB, error) {
+		env := do.MustInvoke[omega.Environments](i)
+		dns := fmt.Sprintf(
+			"postgres://%s:%s@%s:%d/%s?sslmode=disable",
+			env.DBUsername,
+			env.DBPassword,
+			env.DatabaseURL,
+			env.Port,
+			env.DatabaseName,
+		)
+		return storage.ConnectPostgres(dns)
+	})
+
+	do.ProvideValue(injector, slog.New(slog.NewJSONHandler(os.Stdout, nil)))
+
+	do.Provide(injector, storage.NewSQLxClient[storage.VariantModel, int])
+	do.Provide(injector, storage.NewVariantClient)
+	do.Provide(injector, usecase.NewVariant)
+	do.Provide(injector, handlers.NewVariant)
+
+	do.Provide(injector, storage.NewSQLxClient[storage.VariantGroupModel, int])
+	do.Provide(injector, storage.NewVariantGroupClient)
+	do.Provide(injector, usecase.NewVariantGroup)
+	do.Provide(injector, handlers.NewVariantGroup)
+
+	return injector, nil
 }
