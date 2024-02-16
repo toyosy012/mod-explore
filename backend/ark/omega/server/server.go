@@ -19,28 +19,25 @@ import (
 )
 
 func Run() {
-	dbConf, err := omega.LoadConfig[omega.DBConfig]()
-	if err != nil {
-		logrus.Fatal(err)
-		return
-	}
-	serverConf, err := omega.LoadConfig[omega.ServerConfig]()
-	if err != nil {
-		logrus.Fatal(err)
-		return
-	}
-	s, err := newServer(*dbConf)
+	injector, err := Wired()
 	if err != nil {
 		logrus.Fatal(err)
 		return
 	}
 
-	if err = s.Start(serverConf.Address); err != nil {
+	s, err := newServer(injector)
+	if err != nil {
+		logrus.Fatal(err)
+		return
+	}
+
+	env := do.MustInvoke[omega.Environments](injector)
+	if err = s.Start(env.Address); err != nil {
 		logrus.Fatal(err)
 	}
 }
 
-func newServer(conf omega.DBConfig) (*echo.Echo, error) {
+func newServer(injector *do.Injector) (*echo.Echo, error) {
 	s := echo.New()
 	s.HideBanner = true
 	s.Use(middleware.Recover())
