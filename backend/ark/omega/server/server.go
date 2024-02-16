@@ -51,20 +51,6 @@ func newServer(conf omega.DBConfig) (*echo.Echo, error) {
 		return c.String(http.StatusOK, "I'm fine!")
 	})
 
-	postgresDSN := fmt.Sprintf(
-		"postgres://%s:%s@%s:%d/%s?sslmode=disable",
-		conf.DBUsername,
-		conf.DBPassword,
-		conf.DatabaseURL,
-		conf.Port,
-		conf.DatabaseName,
-	)
-
-	injector, err := Wired(postgresDSN)
-	if err != nil {
-		return nil, err
-	}
-
 	variantsV1 := s.Group("/api/v1/variants")
 	{ // variant
 		variantsV1.Use(
@@ -98,9 +84,23 @@ func newServer(conf omega.DBConfig) (*echo.Echo, error) {
 	return s, nil
 }
 
-func Wired(postgresDSN string) (*do.Injector, error) {
+func Wired() (*do.Injector, error) {
 	injector := do.New()
 
+	do.Provide(injector, func(_ *do.Injector) (omega.Environments, error) {
+		conf, err := omega.LoadConfig()
+		return *conf, err
+	})
+
+	env := do.MustInvoke[omega.Environments](injector)
+	postgresDSN := fmt.Sprintf(
+		"postgres://%s:%s@%s:%d/%s?sslmode=disable",
+		env.DBUsername,
+		env.DBPassword,
+		env.DatabaseURL,
+		env.Port,
+		env.DatabaseName,
+	)
 	db, err := storage.ConnectPostgres(postgresDSN)
 	if err != nil {
 		return nil, err
