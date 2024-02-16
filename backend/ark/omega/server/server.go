@@ -72,8 +72,7 @@ func newServer(conf omega.DBConfig) (*echo.Echo, error) {
 				do.MustInvoke[service.VariantRepository](injector).(storage.VariantClient).Client,
 			),
 		)
-		variant := do.MustInvoke[usecase.VariantUsecase](injector)
-		handler := handlers.NewVariant(variant)
+		handler := do.MustInvoke[handlers.VariantHandler](injector)
 		variantsV1.GET("/:id", handler.Read)
 		variantsV1.GET("", handler.List)
 		variantsV1.POST("/new", handler.Create)
@@ -88,8 +87,7 @@ func newServer(conf omega.DBConfig) (*echo.Echo, error) {
 				do.MustInvoke[service.VariantGroupRepository](injector).(storage.VariantGroupClient).Client,
 			),
 		)
-		variantGroup := do.MustInvoke[usecase.VariantGroupUsecase](injector)
-		handler := handlers.NewVariantGroup(variantGroup)
+		handler := do.MustInvoke[handlers.VariantGroupHandler](injector)
 		variantGroupsV1.GET("/:id", handler.Read)
 		variantGroupsV1.GET("", handler.List)
 		variantGroupsV1.POST("/new", handler.Create)
@@ -114,6 +112,7 @@ func Wired(postgresDSN string) (*do.Injector, error) {
 	}
 	do.ProvideValue(injector, variantRepo)
 	do.Provide(injector, usecase.NewVariant)
+	do.Provide(injector, handlers.NewVariant)
 
 	variantGroupRepo, err := storage.NewVariantGroupClient(db, slog.New(slog.NewJSONHandler(os.Stdout, nil)))
 	if err != nil {
@@ -121,6 +120,7 @@ func Wired(postgresDSN string) (*do.Injector, error) {
 	}
 	do.ProvideValue(injector, variantGroupRepo)
 	do.Provide(injector, usecase.NewVariantGroup)
+	do.Provide(injector, handlers.NewVariantGroup)
 
 	return injector, nil
 }
