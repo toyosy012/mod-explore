@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/samber/do"
 
 	"mods-explore/ark/omega/logic/variant/domain/model"
 	"mods-explore/ark/omega/logic/variant/domain/service"
@@ -14,10 +15,10 @@ type Variant struct {
 	usecase.VariantUsecase
 }
 
-func NewVariant(usecase usecase.VariantUsecase) VariantHandler {
-	return Variant{
-		usecase,
-	}
+func NewVariant(injector *do.Injector) (VariantHandler, error) {
+	return &Variant{
+		VariantUsecase: do.MustInvoke[usecase.VariantUsecase](injector),
+	}, nil
 }
 
 type VariantHandler interface {
