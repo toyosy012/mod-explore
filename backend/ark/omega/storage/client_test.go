@@ -31,7 +31,7 @@ func TestTestClientSuite(t *testing.T) {
 }
 
 func (s *TestClientSuite) SetupSuite() {
-	conf, err := omega.LoadConfig[omega.DBConfig]()
+	env, err := omega.LoadConfig()
 	if err != nil {
 		s.T().Log(fmt.Printf("error load db config: %s", err.Error()))
 		return
@@ -39,11 +39,11 @@ func (s *TestClientSuite) SetupSuite() {
 
 	dsn := fmt.Sprintf(
 		"postgres://%s:%s@%s:%d/%s?sslmode=disable",
-		conf.DBUsername,
-		conf.DBPassword,
-		conf.DatabaseURL,
-		conf.Port,
-		conf.DatabaseName,
+		env.DBUsername,
+		env.DBPassword,
+		env.DatabaseURL,
+		env.Port,
+		env.DatabaseName,
 	)
 
 	sqlxCli, err := ConnectPostgres(dsn)
