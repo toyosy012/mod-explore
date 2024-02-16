@@ -2,30 +2,25 @@ package storage
 
 import (
 	"context"
-	"log/slog"
 
-	"github.com/jmoiron/sqlx"
+	"github.com/samber/do"
 
 	"mods-explore/ark/omega/logic/variant/domain/model"
 	"mods-explore/ark/omega/logic/variant/domain/service"
 )
 
 type VariantClient struct {
-	*Client[variantModel, int]
+	*Client[VariantModel, int]
 }
 
-func NewVariantClient(db *sqlx.DB, logger *slog.Logger) (service.VariantRepository, error) {
-	cli, err := NewSQLxClient[variantModel, int](db, logger)
-	if err != nil {
-		return nil, err
-	}
+func NewVariantClient(injector *do.Injector) (service.VariantRepository, error) {
 	return VariantClient{
-		cli,
+		do.MustInvoke[*Client[VariantModel, int]](injector),
 	}, nil
 }
 
-// variantModel Listでも1度に取得されるレコード量は決まっているので、domain modelで異なるバインド用モデルを定義する
-type variantModel struct {
+// VariantModel Listでも1度に取得されるレコード量は決まっているので、domain modelで異なるバインド用モデルを定義する
+type VariantModel struct {
 	ID    int    `db:"id"`
 	Name  string `db:"name"`
 	Group string `db:"group"`

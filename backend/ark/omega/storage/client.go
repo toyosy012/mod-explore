@@ -7,6 +7,7 @@ import (
 	"log/slog"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/samber/do"
 
 	"mods-explore/ark/omega/logic/variant/domain/service"
 )
@@ -18,14 +19,10 @@ type Client[T any, ID any] struct {
 	logger *slog.Logger
 }
 
-func NewSQLxClient[T any, ID any](db *sqlx.DB, logger *slog.Logger) (_ *Client[T, ID], err error) {
-	if logger == nil {
-		logger = slog.Default()
-	}
-
+func NewSQLxClient[T any, ID any](injector *do.Injector) (*Client[T, ID], error) {
 	return &Client[T, ID]{
-		DB:     db,
-		logger: logger,
+		DB:     do.MustInvoke[*sqlx.DB](injector),
+		logger: do.MustInvoke[*slog.Logger](injector),
 	}, nil
 }
 
