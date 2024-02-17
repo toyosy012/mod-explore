@@ -2,12 +2,32 @@ package usecase
 
 import (
 	"context"
+	"errors"
 
 	"github.com/stretchr/testify/mock"
 
 	"mods-explore/ark/omega/logic"
 	"mods-explore/ark/omega/logic/variant/domain/model"
 	"mods-explore/ark/omega/logic/variant/domain/service"
+)
+
+var (
+	ctx = context.Background()
+	e   = errors.New("test")
+)
+
+const (
+	id = iota
+	notExistID
+	intervalServerErrID
+	errID
+)
+
+const (
+	groupID = iota
+	notExistGroupID
+	internalServerErrGroupID
+	errGroupID
 )
 
 // mockTransactionがインターフェースを満たしているか
