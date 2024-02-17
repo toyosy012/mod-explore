@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"context"
 	"errors"
 	"testing"
 
@@ -27,28 +26,12 @@ func TestVariantSuite(t *testing.T) {
 	suite.Run(t, newTestVariantSuite())
 }
 
-var (
-	ctx = context.Background()
-	e   = errors.New("test")
-)
-
 const (
-	find   = "FindVariant"
-	list   = "ListVariants"
-	create = "CreateVariant"
-	update = "UpdateVariant"
-	delete = "DeleteVariant"
-)
-
-const (
-	id = iota
-	notExistID
-	intervalServerErrID
-	errID
-)
-
-const (
-	groupID = iota
+	findVariant   = "FindVariant"
+	listVariant   = "ListVariants"
+	createVariant = "CreateVariant"
+	updateVariant = "UpdateVariant"
+	deleteVariant = "DeleteVariant"
 )
 
 func (s *VariantTestSuite) SetupSuite() {
@@ -69,7 +52,7 @@ func (s *VariantTestSuite) TestFind() {
 	variant := model.NewVariant(model.VariantID(id), "cosmic", "meteor")
 	{
 		s.mockDB.On(
-			find,
+			findVariant,
 			ctx,
 			model.VariantID(id),
 		).
@@ -84,7 +67,7 @@ func (s *VariantTestSuite) TestFind() {
 	}
 	{
 		s.mockDB.On(
-			find,
+			findVariant,
 			ctx,
 			model.VariantID(notExistID),
 		).
@@ -94,7 +77,7 @@ func (s *VariantTestSuite) TestFind() {
 	}
 	{
 		s.mockDB.On(
-			find,
+			findVariant,
 			ctx,
 			model.VariantID(intervalServerErrID),
 		).
@@ -104,7 +87,7 @@ func (s *VariantTestSuite) TestFind() {
 	}
 	{
 		s.mockDB.On(
-			find,
+			findVariant,
 			ctx,
 			model.VariantID(errID),
 		).
@@ -121,7 +104,7 @@ func (s *VariantTestSuite) TestList() {
 
 	{
 		s.mockDB.On(
-			list,
+			listVariant,
 			ctx,
 		).
 			Return(variants, nil).
@@ -136,7 +119,7 @@ func (s *VariantTestSuite) TestList() {
 	}
 	{
 		s.mockDB.On(
-			list,
+			listVariant,
 			ctx,
 		).
 			Return(nil, service.IntervalServerError).
@@ -146,7 +129,7 @@ func (s *VariantTestSuite) TestList() {
 	}
 	{
 		s.mockDB.On(
-			list,
+			listVariant,
 			ctx,
 		).
 			Return(nil, failure.Wrap(e)).
@@ -161,7 +144,7 @@ func (s *VariantTestSuite) TestCreate() {
 	variant := model.NewVariant(id, "cosmic", "meteor")
 	{
 		s.mockDB.On(
-			create,
+			createVariant,
 			ctx,
 			item,
 		).
@@ -177,7 +160,7 @@ func (s *VariantTestSuite) TestCreate() {
 	}
 	{
 		s.mockDB.On(
-			create,
+			createVariant,
 			ctx,
 			item,
 		).
@@ -193,9 +176,9 @@ func (s *VariantTestSuite) TestUpdate() {
 	{
 		item := service.NewUpdateVariant(id, groupID, "meteor")
 		variant := model.NewVariant(id, "cosmic", "meteor")
-		s.mockDB.On(find, model.VariantID(id)).Return(&variant, nil).Once()
+		s.mockDB.On(findVariant, model.VariantID(id)).Return(&variant, nil).Once()
 		s.mockDB.On(
-			update,
+			updateVariant,
 			ctx,
 			item,
 		).
@@ -210,12 +193,12 @@ func (s *VariantTestSuite) TestUpdate() {
 		s.Equal(&variant, r)
 	}
 
-	{ // update error case
+	{ // updateVariant error case
 		item := service.NewUpdateVariant(id, groupID, "meteor")
 		variant := model.NewVariant(id, "cosmic", "meteor")
-		s.mockDB.On(find, model.VariantID(id)).Return(&variant, nil).Once()
+		s.mockDB.On(findVariant, model.VariantID(id)).Return(&variant, nil).Once()
 		s.mockDB.On(
-			update,
+			updateVariant,
 			ctx,
 			item,
 		).
@@ -229,9 +212,9 @@ func (s *VariantTestSuite) TestUpdate() {
 func (s *VariantTestSuite) TestDelete() {
 	{
 		variant := model.NewVariant(id, "cosmic", "meteor")
-		s.mockDB.On(find, ctx, model.VariantID(id)).Return(&variant, nil).Once()
+		s.mockDB.On(findVariant, ctx, model.VariantID(id)).Return(&variant, nil).Once()
 		s.mockDB.On(
-			delete,
+			deleteVariant,
 			ctx,
 			model.VariantID(id),
 		).
@@ -240,11 +223,11 @@ func (s *VariantTestSuite) TestDelete() {
 		s.Nil(s.usecase.Delete(ctx, model.VariantID(id)))
 	}
 
-	{ // update error case
+	{ // updateVariant error case
 		variant := model.NewVariant(id, "cosmic", "meteor")
-		s.mockDB.On(find, ctx, model.VariantID(id)).Return(&variant, nil).Once()
+		s.mockDB.On(findVariant, ctx, model.VariantID(id)).Return(&variant, nil).Once()
 		s.mockDB.On(
-			delete,
+			deleteVariant,
 			ctx,
 			model.VariantID(id),
 		).
