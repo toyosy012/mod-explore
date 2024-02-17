@@ -25,6 +25,9 @@ const (
 
 const (
 	groupID = iota
+	notExistGroupID
+	internalServerErrGroupID
+	errGroupID
 )
 
 // mockTransactionがインターフェースを満たしているか
