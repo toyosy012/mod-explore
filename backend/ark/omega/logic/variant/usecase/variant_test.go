@@ -102,3 +102,46 @@ func (s *VariantTestSuite) TestFind() {
 		s.True(errors.Is(err, e))
 	}
 }
+
+func (s *VariantTestSuite) TestList() {
+	method := "ListVariants"
+	variants := model.Variants{
+		model.NewVariant(model.VariantID(id), "cosmic", "meteor"),
+	}
+
+	{
+		s.mockDB.On(
+			method,
+			ctx,
+		).
+			Return(variants, nil).
+			Once()
+		r, err := s.usecase.List(ctx)
+		if err != nil {
+			s.T().Error(err)
+			return
+		}
+
+		s.Equal(variants, r)
+	}
+	{
+		s.mockDB.On(
+			method,
+			ctx,
+		).
+			Return(nil, service.IntervalServerError).
+			Once()
+		_, err := s.usecase.List(ctx)
+		s.True(failure.Is(err, logic.IntervalServerError))
+	}
+	{
+		s.mockDB.On(
+			method,
+			ctx,
+		).
+			Return(nil, failure.Wrap(e)).
+			Once()
+		_, err := s.usecase.List(ctx)
+		s.True(errors.Is(err, e))
+	}
+}
