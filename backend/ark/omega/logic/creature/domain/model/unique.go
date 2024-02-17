@@ -36,6 +36,8 @@ func NewUniqueDinosaur(
 	}
 }
 
+type UniqueDinosaurs []UniqueDinosaur
+
 type UniqueDinosaurID int
 type UniqueName string
 
