@@ -2,9 +2,12 @@ package usecase
 
 import (
 	"context"
+	"errors"
 
+	"github.com/morikuni/failure"
 	"github.com/samber/do"
 
+	"mods-explore/ark/omega/logic"
 	"mods-explore/ark/omega/logic/creature/domain/model"
 	"mods-explore/ark/omega/logic/creature/domain/service"
 )
@@ -26,7 +29,17 @@ func NewUnique(injector *do.Injector) (*Unique, error) {
 }
 
 func (u Unique) Find(ctx context.Context, id model.UniqueDinosaurID) (*model.UniqueDinosaur, error) {
-	return nil, nil
+	variant, err := u.repo.Select(ctx, id)
+	if err != nil {
+		if errors.Is(err, service.NotFound) {
+			return nil, failure.New(logic.NotFound)
+		} else if errors.Is(err, service.IntervalServerError) {
+			return nil, failure.New(logic.IntervalServerError)
+		}
+		return nil, failure.Wrap(err)
+	}
+
+	return variant, nil
 }
 func (u Unique) List(ctx context.Context) (model.UniqueDinosaurs, error) {
 	return nil, nil
