@@ -46,9 +46,9 @@ type DinosaurStatus interface {
 	Health | Melee
 }
 
-type UniqueMultiplier[T DinosaurStatus] struct{ value UniqueTotalMultiplier }
+type UniqueMultiplier[T DinosaurStatus] struct{ value statusMultiplier }
 
-func NewUniqueMultiplier[T DinosaurStatus](v UniqueTotalMultiplier) (*UniqueMultiplier[T], error) {
+func NewUniqueMultiplier[T DinosaurStatus](v statusMultiplier) (*UniqueMultiplier[T], error) {
 	if errUniqueMinMultiplier >= v.ToFloat32() {
 		return nil, errors.New("ユニーク生物のステータス倍率は0より大きくしてください")
 	}
@@ -72,6 +72,6 @@ func (d UniqueDinosaur) Damage() UniqueMultipliedStatus[Melee] {
 
 type UniqueVariant [2]DinosaurVariant
 
-type UniqueTotalMultiplier float32
+type statusMultiplier float32
 
-func (m UniqueTotalMultiplier) ToFloat32() float32 { return float32(m) }
+func (m statusMultiplier) ToFloat32() float32 { return float32(m) }
