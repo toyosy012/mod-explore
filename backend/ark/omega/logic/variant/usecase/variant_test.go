@@ -28,8 +28,11 @@ func TestVariantSuite(t *testing.T) {
 }
 
 var (
-	ctx    = context.Background()
-	find   = "FindVariant"
+	ctx  = context.Background()
+	find = "FindVariant"
+
+	list = "ListVariants"
+
 	create = "CreateVariant"
 	e      = errors.New("test")
 )
@@ -109,14 +112,13 @@ func (s *VariantTestSuite) TestFind() {
 }
 
 func (s *VariantTestSuite) TestList() {
-	method := "ListVariants"
 	variants := model.Variants{
 		model.NewVariant(model.VariantID(id), "cosmic", "meteor"),
 	}
 
 	{
 		s.mockDB.On(
-			method,
+			list,
 			ctx,
 		).
 			Return(variants, nil).
@@ -131,7 +133,7 @@ func (s *VariantTestSuite) TestList() {
 	}
 	{
 		s.mockDB.On(
-			method,
+			list,
 			ctx,
 		).
 			Return(nil, service.IntervalServerError).
@@ -141,7 +143,7 @@ func (s *VariantTestSuite) TestList() {
 	}
 	{
 		s.mockDB.On(
-			method,
+			list,
 			ctx,
 		).
 			Return(nil, failure.Wrap(e)).
