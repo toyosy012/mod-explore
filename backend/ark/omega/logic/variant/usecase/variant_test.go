@@ -28,12 +28,16 @@ func TestVariantSuite(t *testing.T) {
 }
 
 var (
-	ctx    = context.Background()
+	ctx = context.Background()
+	e   = errors.New("test")
+)
+
+const (
 	find   = "FindVariant"
 	list   = "ListVariants"
 	create = "CreateVariant"
 	update = "UpdateVariant"
-	e      = errors.New("test")
+	delete = "DeleteVariant"
 )
 
 const (
@@ -218,6 +222,35 @@ func (s *VariantTestSuite) TestUpdate() {
 			Return(nil, e).
 			Once()
 		_, err := s.usecase.Update(ctx, item)
+		s.True(errors.Is(err, e))
+	}
+}
+
+func (s *VariantTestSuite) TestDelete() {
+	{
+		variant := model.NewVariant(id, "cosmic", "meteor")
+		s.mockDB.On(find, ctx, model.VariantID(id)).Return(&variant, nil).Once()
+		s.mockDB.On(
+			delete,
+			ctx,
+			model.VariantID(id),
+		).
+			Return(nil).
+			Once()
+		s.Nil(s.usecase.Delete(ctx, model.VariantID(id)))
+	}
+
+	{ // update error case
+		variant := model.NewVariant(id, "cosmic", "meteor")
+		s.mockDB.On(find, ctx, model.VariantID(id)).Return(&variant, nil).Once()
+		s.mockDB.On(
+			delete,
+			ctx,
+			model.VariantID(id),
+		).
+			Return(e).
+			Once()
+		err := s.usecase.Delete(ctx, model.VariantID(id))
 		s.True(errors.Is(err, e))
 	}
 }
