@@ -28,9 +28,10 @@ func TestVariantSuite(t *testing.T) {
 }
 
 var (
-	ctx  = context.Background()
-	find = "FindVariant"
-	e    = errors.New("test")
+	ctx    = context.Background()
+	find   = "FindVariant"
+	create = "CreateVariant"
+	e      = errors.New("test")
 )
 
 const (
@@ -38,6 +39,10 @@ const (
 	notExistID
 	intervalServerErrID
 	errID
+)
+
+const (
+	groupID = iota
 )
 
 func (s *VariantTestSuite) SetupSuite() {
@@ -142,6 +147,38 @@ func (s *VariantTestSuite) TestList() {
 			Return(nil, failure.Wrap(e)).
 			Once()
 		_, err := s.usecase.List(ctx)
+		s.True(errors.Is(err, e))
+	}
+}
+
+func (s *VariantTestSuite) TestCreate() {
+	item := service.NewCreateVariant(groupID, "meteor")
+	variant := model.NewVariant(id, "cosmic", "meteor")
+	{
+		s.mockDB.On(
+			create,
+			ctx,
+			item,
+		).
+			Return(&variant, nil).
+			Once()
+		r, err := s.usecase.Create(ctx, item)
+		if err != nil {
+			s.T().Error(err)
+			return
+		}
+
+		s.Equal(&variant, r)
+	}
+	{
+		s.mockDB.On(
+			create,
+			ctx,
+			item,
+		).
+			Return(nil, e).
+			Once()
+		_, err := s.usecase.Create(ctx, item)
 		s.True(errors.Is(err, e))
 	}
 }
