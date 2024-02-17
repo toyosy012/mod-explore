@@ -78,7 +78,7 @@ type mockVariantGroup struct {
 	mock.Mock
 }
 
-func newMockVariantGroup() *mockDBClient { return &mockDBClient{} }
+func newMockVariantGroup() *mockVariantGroup { return &mockVariantGroup{} }
 
 func (g *mockVariantGroup) WithTransaction(ctx context.Context, fn func(context.Context) (any, error)) (any, error) {
 	return fn(ctx)
