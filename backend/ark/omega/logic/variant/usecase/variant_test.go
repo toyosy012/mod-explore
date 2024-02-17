@@ -28,12 +28,11 @@ func TestVariantSuite(t *testing.T) {
 }
 
 var (
-	ctx  = context.Background()
-	find = "FindVariant"
-
-	list = "ListVariants"
-
+	ctx    = context.Background()
+	find   = "FindVariant"
+	list   = "ListVariants"
 	create = "CreateVariant"
+	update = "UpdateVariant"
 	e      = errors.New("test")
 )
 
@@ -181,6 +180,44 @@ func (s *VariantTestSuite) TestCreate() {
 			Return(nil, e).
 			Once()
 		_, err := s.usecase.Create(ctx, item)
+		s.True(errors.Is(err, e))
+	}
+}
+
+// TestUpdate レコードの存在確認はFindと同じなのチェックしない
+func (s *VariantTestSuite) TestUpdate() {
+	{
+		item := service.NewUpdateVariant(id, groupID, "meteor")
+		variant := model.NewVariant(id, "cosmic", "meteor")
+		s.mockDB.On(find, model.VariantID(id)).Return(&variant, nil).Once()
+		s.mockDB.On(
+			update,
+			ctx,
+			item,
+		).
+			Return(&variant, nil).
+			Once()
+		r, err := s.usecase.Update(ctx, item)
+		if err != nil {
+			s.T().Error(err)
+			return
+		}
+
+		s.Equal(&variant, r)
+	}
+
+	{ // update error case
+		item := service.NewUpdateVariant(id, groupID, "meteor")
+		variant := model.NewVariant(id, "cosmic", "meteor")
+		s.mockDB.On(find, model.VariantID(id)).Return(&variant, nil).Once()
+		s.mockDB.On(
+			update,
+			ctx,
+			item,
+		).
+			Return(nil, e).
+			Once()
+		_, err := s.usecase.Update(ctx, item)
 		s.True(errors.Is(err, e))
 	}
 }
