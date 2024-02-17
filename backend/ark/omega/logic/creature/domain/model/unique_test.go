@@ -19,6 +19,17 @@ type UniqueDinosaurTestSuite struct {
 	defaultDamageMultiplier UniqueMultiplier[Melee]
 }
 
+const (
+	minHealth              = 0
+	healthValue            = 2
+	healthUniqueMultiplier = 36.0
+	multipliedHealth       = 72.0
+	minMelee               = 0
+	meleeValue             = 2
+	meleeUniqueMultiplier  = 36.0
+	multipliedMelee        = 72.0
+)
+
 func TestUniqueDinosaur(t *testing.T) {
 	s, err := NewUniqueDinosaurTestSuite()
 	if err != nil {
@@ -28,11 +39,11 @@ func TestUniqueDinosaur(t *testing.T) {
 }
 
 func NewUniqueDinosaurTestSuite() (*UniqueDinosaurTestSuite, error) {
-	baseHealth, err := NewHealth(2)
+	baseHealth, err := NewHealth(healthValue)
 	if err != nil {
 		return nil, err
 	}
-	baseMelee := NewMelee(2)
+	baseMelee := NewMelee(meleeValue)
 
 	dino := NewDinosaur(
 		DinosaurID(1),
@@ -41,20 +52,10 @@ func NewUniqueDinosaurTestSuite() (*UniqueDinosaurTestSuite, error) {
 		baseMelee,
 	)
 
-	cosmicMultiplier, err := NewVariantGroupMultiplier(6.0)
-	if err != nil {
-		return nil, err
-	}
-	natureMultiplier, err := NewVariantGroupMultiplier(6.0)
-	if err != nil {
-		return nil, err
-	}
-
 	variants := UniqueVariant(
 		[2]DinosaurVariant{
 			NewDinosaurVariant(
 				model.NewVariant(cosmicID, cosmic, singularity),
-				cosmicMultiplier,
 				[]VariantDescription{
 					"AoE explosive tick damage, traps dinos in center.",
 					"Destroys corpses.",
@@ -62,7 +63,6 @@ func NewUniqueDinosaurTestSuite() (*UniqueDinosaurTestSuite, error) {
 			),
 			NewDinosaurVariant(
 				model.NewVariant(natureID, nature, thunderstorm),
-				natureMultiplier,
 				[]VariantDescription{
 					"Summons lightning bolts within an area to strike random targets.",
 				},
@@ -70,11 +70,11 @@ func NewUniqueDinosaurTestSuite() (*UniqueDinosaurTestSuite, error) {
 		},
 	)
 
-	defaultHealthMultiplier, err := NewUniqueMultiplier[Health](variants.TotalMultiplier())
+	defaultHealthMultiplier, err := NewUniqueMultiplier[Health](healthUniqueMultiplier)
 	if err != nil {
 		return nil, err
 	}
-	defaultDamageMultiplier, err := NewUniqueMultiplier[Melee](variants.TotalMultiplier())
+	defaultDamageMultiplier, err := NewUniqueMultiplier[Melee](meleeUniqueMultiplier)
 	if err != nil {
 		return nil, err
 	}
@@ -90,12 +90,6 @@ func NewUniqueDinosaurTestSuite() (*UniqueDinosaurTestSuite, error) {
 	}, nil
 }
 
-func (s *UniqueDinosaurTestSuite) TestTotalMultiplier() {
-	s.T().Log("ユニーク生物の持つバリアント倍率が乗算で算出されているか")
-	expect := UniqueTotalMultiplier(36.0)
-	s.Equal(expect, s.variants.TotalMultiplier())
-}
-
 func (s *UniqueDinosaurTestSuite) TestMultiplierHealth() {
 	s.T().Log("体力型で倍率の型とベース値の計算が可能かテスト")
 
@@ -104,14 +98,14 @@ func (s *UniqueDinosaurTestSuite) TestMultiplierHealth() {
 	)
 
 	uniqueHealth := uniqueDino.Health()
-	health := UniqueMultipliedStatus[Health](72.0)
+	health := UniqueMultipliedStatus[Health](multipliedHealth)
 	s.Equal(health, uniqueHealth)
 }
 
 func (s *UniqueDinosaurTestSuite) TestErrMultiplierHealthZero() {
 	s.T().Log("体力型で倍率が0のエラーケースのテスト")
 
-	if _, err := NewUniqueMultiplier[Health](0); err == nil {
+	if _, err := NewUniqueMultiplier[Health](minHealth); err == nil {
 		s.T().Errorf("体力型の倍率が0でエラーになっていません")
 	}
 }
@@ -124,14 +118,14 @@ func (s *UniqueDinosaurTestSuite) TestMultiplierDamage() {
 	)
 
 	uniqueHealth := uniqueDino.Damage()
-	melee := UniqueMultipliedStatus[Melee](72.0)
+	melee := UniqueMultipliedStatus[Melee](multipliedMelee)
 	s.Equal(melee, uniqueHealth)
 }
 
 func (s *UniqueDinosaurTestSuite) TestErrMultiplierDamageZero() {
 	s.T().Log("攻撃力型で倍率が0のエラーケースのテス")
 
-	if _, err := NewUniqueMultiplier[Melee](0); err == nil {
+	if _, err := NewUniqueMultiplier[Melee](minMelee); err == nil {
 		s.T().Errorf("攻撃力型の倍率が0でエラーになっていません")
 	}
 }

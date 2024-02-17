@@ -2,8 +2,6 @@ package model
 
 import (
 	"errors"
-
-	"github.com/samber/lo"
 )
 
 var (
@@ -50,7 +48,7 @@ type UniqueMultiplier[T DinosaurStatus] struct{ value UniqueTotalMultiplier }
 
 func NewUniqueMultiplier[T DinosaurStatus](v UniqueTotalMultiplier) (*UniqueMultiplier[T], error) {
 	if errUniqueMinMultiplier >= v.ToFloat32() {
-		return nil, errors.New("ユニークバリアントの合計倍率は0より大きくしてください")
+		return nil, errors.New("ユニーク生物のステータス倍率は0より大きくしてください")
 	}
 	return &UniqueMultiplier[T]{value: v}, nil
 }
@@ -71,16 +69,6 @@ func (d UniqueDinosaur) Damage() UniqueMultipliedStatus[Melee] {
 }
 
 type UniqueVariant [2]DinosaurVariant
-
-func (v UniqueVariant) TotalMultiplier() UniqueTotalMultiplier {
-	return lo.ReduceRight[DinosaurVariant, UniqueTotalMultiplier](
-		v[:], // slice to list
-		func(agg UniqueTotalMultiplier, item DinosaurVariant, _ int) UniqueTotalMultiplier {
-			return UniqueTotalMultiplier(float32(agg) * item.GroupMultiplier().ToFloat32())
-		},
-		1.0,
-	)
-}
 
 type UniqueTotalMultiplier float32
 
