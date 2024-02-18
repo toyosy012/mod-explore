@@ -53,7 +53,7 @@ func NewUniqueDinosaurTestSuite() (*UniqueDinosaurTestSuite, error) {
 	)
 
 	variants := UniqueVariant(
-		[2]DinosaurVariant{
+		[]DinosaurVariant{
 			NewDinosaurVariant(
 				model.NewVariant(cosmicID, cosmic, singularity),
 				[]VariantDescription{
