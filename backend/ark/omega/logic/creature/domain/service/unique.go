@@ -13,8 +13,8 @@ type UniqueQueryRepository interface {
 }
 
 type UniqueCommandRepository interface {
-	Insert(context.Context, CreateUniqueDinosaur) (*model.UniqueDinosaur, error)
-	Update(context.Context, UpdateUniqueDinosaur) (*model.UniqueDinosaur, error)
+	Insert(context.Context, CreateUniqueDinosaur) (*ResponseUnique, error)
+	Update(context.Context, UpdateUniqueDinosaur) (*ResponseUnique, error)
 	Delete(context.Context, model.UniqueDinosaurID) error
 }
 
@@ -70,3 +70,28 @@ func NewUpdateUniqueDinosaur(
 }
 
 func (d UpdateUniqueDinosaur) ID() model.UniqueDinosaurID { return d.uniqueDinoID }
+
+type ResponseUnique struct {
+	id               model.UniqueDinosaurID
+	name             model.UniqueName
+	healthMultiplier model.UniqueMultiplier[model.Health]
+	damageMultiplier model.UniqueMultiplier[model.Melee]
+}
+
+func NewResponseUnique(
+	id model.UniqueDinosaurID,
+	name model.UniqueName,
+	healthMultiplier model.UniqueMultiplier[model.Health],
+	damageMultiplier model.UniqueMultiplier[model.Melee],
+) ResponseUnique {
+	return ResponseUnique{id, name, healthMultiplier, damageMultiplier}
+}
+
+func (u ResponseUnique) ID() model.UniqueDinosaurID { return u.id }
+func (u ResponseUnique) Name() model.UniqueName     { return u.name }
+func (u ResponseUnique) HealthMultiplier() model.UniqueMultiplier[model.Health] {
+	return u.healthMultiplier
+}
+func (u ResponseUnique) MeleeMultiplier() model.UniqueMultiplier[model.Melee] {
+	return u.damageMultiplier
+}
