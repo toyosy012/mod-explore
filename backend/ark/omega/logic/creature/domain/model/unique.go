@@ -70,7 +70,7 @@ func (d UniqueDinosaur) Damage() UniqueMultipliedStatus[Melee] {
 	return d.damageMultiplier.multiple(d.baseMelee)
 }
 
-type UniqueVariant [2]DinosaurVariant
+type UniqueVariant []DinosaurVariant
 
 type statusMultiplier float32
 

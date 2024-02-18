@@ -6,10 +6,12 @@ import (
 
 	"github.com/morikuni/failure"
 	"github.com/samber/do"
+	"github.com/samber/lo"
 
 	"mods-explore/ark/omega/logic"
 	"mods-explore/ark/omega/logic/creature/domain/model"
 	"mods-explore/ark/omega/logic/creature/domain/service"
+	variantModel "mods-explore/ark/omega/logic/variant/domain/model"
 )
 
 type UniqueUsecase interface {
@@ -63,11 +65,31 @@ func (u Unique) List(ctx context.Context) (model.UniqueDinosaurs, error) {
 
 func (u Unique) Create(ctx context.Context, create service.CreateCreature) (*model.UniqueDinosaur, error) {
 	return logic.UseTransactioner(ctx, func(ctx context.Context) (*model.UniqueDinosaur, error) {
-		unique, err := u.uniqueCommand.Insert(ctx, create)
+		d, err := u.dinoCommand.Insert(ctx, create.CreateDinosaur)
 		if err != nil {
 			return nil, failure.Wrap(err)
 		}
-		return unique, nil
+		unique, err := u.uniqueCommand.Insert(ctx, create.CreateUniqueDinosaur)
+		if err != nil {
+			return nil, failure.Wrap(err)
+		}
+		v, err := u.variantCommand.Insert(ctx, create.CreateVariants)
+		if err != nil {
+			return nil, failure.Wrap(err)
+		}
+
+		dino := model.NewDinosaur(d.ID(), d.Name(), d.Health(), d.Melee())
+		vs := lo.Map(v.Values(), func(item model.DinosaurVariant, _ int) model.DinosaurVariant {
+			return model.NewDinosaurVariant(
+				variantModel.NewVariant(item.ID(), item.Group(), item.Name()),
+				model.VariantDescriptions{},
+			)
+		})
+
+		resp := model.NewUniqueDinosaur(
+			dino, unique.ID(), unique.Name(), vs, unique.HealthMultiplier(), unique.MeleeMultiplier(),
+		)
+		return &resp, nil
 	})
 }
 
@@ -80,14 +102,43 @@ func (u Unique) Update(ctx context.Context, update service.UpdateCreature) (*mod
 			return nil, failure.Wrap(err)
 		}
 
-		unique, err := u.uniqueCommand.Update(ctx, update)
+		d, err := u.dinoCommand.Update(ctx, update.UpdateDinosaur)
 		if err != nil {
 			if errors.Is(err, service.IntervalServerError) {
 				return nil, failure.New(logic.IntervalServerError)
 			}
 			return nil, failure.Wrap(err)
 		}
-		return unique, nil
+
+		unique, err := u.uniqueCommand.Update(ctx, update.UpdateUniqueDinosaur)
+		if err != nil {
+			if errors.Is(err, service.IntervalServerError) {
+				return nil, failure.New(logic.IntervalServerError)
+			}
+			return nil, failure.Wrap(err)
+		}
+
+		v, err := u.variantCommand.Update(ctx, update.UpdateVariants)
+		if err != nil {
+			if errors.Is(err, service.IntervalServerError) {
+				return nil, failure.New(logic.IntervalServerError)
+			}
+			return nil, failure.Wrap(err)
+		}
+
+		dino := model.NewDinosaur(d.ID(), d.Name(), d.Health(), d.Melee())
+		vs := lo.Map(v.Values(), func(item model.DinosaurVariant, _ int) model.DinosaurVariant {
+			return model.NewDinosaurVariant(
+				variantModel.NewVariant(item.ID(), item.Group(), item.Name()),
+				model.VariantDescriptions{},
+			)
+		})
+
+		resp := model.NewUniqueDinosaur(
+			dino, unique.ID(), unique.Name(), vs, unique.HealthMultiplier(), unique.MeleeMultiplier(),
+		)
+
+		return &resp, nil
 	})
 }
 
