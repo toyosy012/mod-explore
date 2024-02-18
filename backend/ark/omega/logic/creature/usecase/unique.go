@@ -54,7 +54,13 @@ func (u Unique) List(ctx context.Context) (model.UniqueDinosaurs, error) {
 }
 
 func (u Unique) Create(ctx context.Context, create service.CreateUniqueDinosaur) (*model.UniqueDinosaur, error) {
-	return nil, nil
+	return logic.UseTransactioner(ctx, func(ctx context.Context) (*model.UniqueDinosaur, error) {
+		unique, err := u.repo.Insert(ctx, create)
+		if err != nil {
+			return nil, failure.Wrap(err)
+		}
+		return unique, nil
+	})
 }
 
 func (u Unique) Update(ctx context.Context, update service.UpdateUniqueDinosaur) (*model.UniqueDinosaur, error) {

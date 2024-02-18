@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"errors"
+	variantModel "mods-explore/ark/omega/logic/variant/domain/model"
 	"testing"
 
 	"github.com/morikuni/failure"
@@ -11,7 +12,6 @@ import (
 	"mods-explore/ark/omega/logic"
 	"mods-explore/ark/omega/logic/creature/domain/model"
 	"mods-explore/ark/omega/logic/creature/domain/service"
-	variantModel "mods-explore/ark/omega/logic/variant/domain/model"
 )
 
 const (
@@ -27,6 +27,7 @@ type UniqueDinosaurTestSuite struct {
 	mockDB  *mockUniqueDB
 	usecase UniqueUsecase
 	unique  model.UniqueDinosaur
+	create  service.CreateUniqueDinosaur
 }
 
 func newTestUniqueDinosaurSuite() *UniqueDinosaurTestSuite { return &UniqueDinosaurTestSuite{} }
@@ -36,8 +37,9 @@ func TestUniqueDinosaurSuite(t *testing.T) {
 }
 
 const (
-	findUnique = "Select"
-	listUnique = "List"
+	findUnique   = "Select"
+	listUnique   = "List"
+	insertUnique = "Insert"
 )
 
 func (s *UniqueDinosaurTestSuite) SetupSuite() {
@@ -52,6 +54,44 @@ func (s *UniqueDinosaurTestSuite) SetupSuite() {
 	}
 
 	s.usecase = usecase
+
+	h, err := model.NewHealth(health)
+	if err != nil {
+		s.T().Error(err)
+		return
+	}
+	healthMultiplier, err := model.NewUniqueMultiplier[model.Health](multiplierHealth)
+	if err != nil {
+		s.T().Error(err)
+		return
+	}
+	meleeMultiplier, err := model.NewUniqueMultiplier[model.Melee](multiplierMelee)
+	if err != nil {
+		s.T().Error(err)
+		return
+	}
+	variants := model.UniqueVariant{
+		model.NewDinosaurVariant(
+			variantModel.NewVariant(cosmicID, cosmic, singularity),
+			model.VariantDescriptions{},
+		),
+		model.NewDinosaurVariant(
+			variantModel.NewVariant(natureID, nature, thunderstorm),
+			model.VariantDescriptions{},
+		),
+	}
+	{
+		s.unique = model.NewUniqueDinosaur(
+			model.NewDinosaur(creatureID, creatureName, h, model.NewMelee(melee)),
+			uniqueID, uniqueName, variants, *healthMultiplier, *meleeMultiplier,
+		)
+	}
+	{
+		s.create = service.NewCreateUniqueDinosaur(
+			service.NewCreateDinosaur(creatureName, h, melee),
+			uniqueName, variants, *healthMultiplier, *meleeMultiplier,
+		)
+	}
 }
 
 const (
@@ -61,46 +101,15 @@ const (
 	melee            = 0
 	cosmicID         = iota
 	natureID
-	creatureID = 1
-	uniqueID   = 1
+	creatureID   = 1
+	creatureName = "dodo"
+	uniqueID     = 1
+	uniqueName   = "Kenny"
+	cosmic       = "cosmic"
+	singularity  = "singularity"
+	nature       = "nature"
+	thunderstorm = "thunderstorm"
 )
-
-func (s *UniqueDinosaurTestSuite) BeforeTest(_ string, tableName string) {
-	if "TestFind" == tableName {
-		h, err := model.NewHealth(health)
-		if err != nil {
-			s.T().Error(err)
-			return
-		}
-		healthMultiplier, err := model.NewUniqueMultiplier[model.Health](multiplierHealth)
-		if err != nil {
-			s.T().Error(err)
-			return
-		}
-		meleeMultiplier, err := model.NewUniqueMultiplier[model.Melee](multiplierMelee)
-		if err != nil {
-			s.T().Error(err)
-			return
-		}
-		s.unique = model.NewUniqueDinosaur(
-			model.NewDinosaur(creatureID, "dodo", h, model.NewMelee(melee)),
-			uniqueID,
-			"Kenny",
-			model.UniqueVariant{
-				model.NewDinosaurVariant(
-					variantModel.NewVariant(cosmicID, "cosmic", "singularity"),
-					model.VariantDescriptions{},
-				),
-				model.NewDinosaurVariant(
-					variantModel.NewVariant(natureID, "nature", "thunder"),
-					model.VariantDescriptions{},
-				),
-			},
-			*healthMultiplier,
-			*meleeMultiplier,
-		)
-	}
-}
 
 func (s *UniqueDinosaurTestSuite) TestFind() {
 	{
@@ -188,6 +197,36 @@ func (s *UniqueDinosaurTestSuite) TestList() {
 			Return(nil, failure.Wrap(e)).
 			Once()
 		_, err := s.usecase.List(ctx)
+		s.True(errors.Is(err, e))
+	}
+}
+
+func (s *UniqueDinosaurTestSuite) TestInsert() {
+	{
+		s.mockDB.On(
+			insertUnique,
+			ctx,
+			s.create,
+		).
+			Return(&s.unique, nil).
+			Once()
+		r, err := s.usecase.Create(ctx, s.create)
+		if err != nil {
+			s.T().Error(err)
+			return
+		}
+
+		s.Equal(&s.unique, r)
+	}
+	{
+		s.mockDB.On(
+			insertUnique,
+			ctx,
+			s.create,
+		).
+			Return(nil, e).
+			Once()
+		_, err := s.usecase.Create(ctx, s.create)
 		s.True(errors.Is(err, e))
 	}
 }
