@@ -37,24 +37,18 @@ func NewCreateCreature(
 }
 
 type CreateUniqueDinosaur struct {
-	CreateDinosaur
 	name             model.UniqueName
-	variants         model.UniqueVariant
 	healthMultiplier model.UniqueMultiplier[model.Health]
 	damageMultiplier model.UniqueMultiplier[model.Melee]
 }
 
 func NewCreateUniqueDinosaur(
-	base CreateDinosaur,
 	name model.UniqueName,
-	variants model.UniqueVariant,
 	healthMultiplier model.UniqueMultiplier[model.Health],
 	damageMultiplier model.UniqueMultiplier[model.Melee],
 ) CreateUniqueDinosaur {
 	return CreateUniqueDinosaur{
-		CreateDinosaur:   base,
 		name:             name,
-		variants:         variants,
 		healthMultiplier: healthMultiplier,
 		damageMultiplier: damageMultiplier,
 	}
@@ -81,24 +75,19 @@ func NewUpdateCreature(
 type UpdateUniqueDinosaur struct {
 	uniqueDinoID     model.UniqueDinosaurID
 	name             model.UniqueName
-	variants         model.UniqueVariant
 	healthMultiplier model.UniqueMultiplier[model.Health]
 	damageMultiplier model.UniqueMultiplier[model.Melee]
 }
 
 func NewUpdateUniqueDinosaur(
-	base UpdateDinosaur,
 	uniqueDinoID model.UniqueDinosaurID,
 	name model.UniqueName,
-	variants model.UniqueVariant,
 	healthMultiplier model.UniqueMultiplier[model.Health],
 	damageMultiplier model.UniqueMultiplier[model.Melee],
 ) UpdateUniqueDinosaur {
 	return UpdateUniqueDinosaur{
-		UpdateDinosaur:   base,
 		uniqueDinoID:     uniqueDinoID,
 		name:             name,
-		variants:         variants,
 		healthMultiplier: healthMultiplier,
 		damageMultiplier: damageMultiplier,
 	}
