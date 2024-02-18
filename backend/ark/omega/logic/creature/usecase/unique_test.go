@@ -262,4 +262,28 @@ func (s *UniqueDinosaurTestSuite) TestUpdate() {
 
 		s.Equal(&s.unique, r)
 	}
+	{
+		s.mockDB.On(findUnique, ctx, id).Return(&s.unique, nil).Once()
+		s.mockDB.On(
+			updateUnique,
+			ctx,
+			s.update,
+		).
+			Return(nil, service.IntervalServerError).
+			Once()
+		_, err := s.usecase.Update(ctx, s.update)
+		s.True(failure.Is(err, logic.IntervalServerError))
+	}
+	{
+		s.mockDB.On(findUnique, ctx, id).Return(&s.unique, nil).Once()
+		s.mockDB.On(
+			updateUnique,
+			ctx,
+			s.update,
+		).
+			Return(nil, failure.Wrap(e)).
+			Once()
+		_, err := s.usecase.Update(ctx, s.update)
+		s.True(errors.Is(err, e))
+	}
 }
