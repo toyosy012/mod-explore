@@ -28,6 +28,7 @@ type UniqueDinosaurTestSuite struct {
 	usecase UniqueUsecase
 	unique  model.UniqueDinosaur
 	create  service.CreateUniqueDinosaur
+	update  service.UpdateUniqueDinosaur
 }
 
 func newTestUniqueDinosaurSuite() *UniqueDinosaurTestSuite { return &UniqueDinosaurTestSuite{} }
@@ -40,6 +41,7 @@ const (
 	findUnique   = "Select"
 	listUnique   = "List"
 	insertUnique = "Insert"
+	updateUnique = "Update"
 )
 
 func (s *UniqueDinosaurTestSuite) SetupSuite() {
@@ -90,6 +92,12 @@ func (s *UniqueDinosaurTestSuite) SetupSuite() {
 		s.create = service.NewCreateUniqueDinosaur(
 			service.NewCreateDinosaur(creatureName, h, melee),
 			uniqueName, variants, *healthMultiplier, *meleeMultiplier,
+		)
+	}
+	{
+		s.update = service.NewUpdateUniqueDinosaur(
+			service.NewUpdateDinosaur(creatureID, creatureName, h, melee),
+			uniqueID, uniqueName, variants, *healthMultiplier, *meleeMultiplier,
 		)
 	}
 }
@@ -228,5 +236,25 @@ func (s *UniqueDinosaurTestSuite) TestInsert() {
 			Once()
 		_, err := s.usecase.Create(ctx, s.create)
 		s.True(errors.Is(err, e))
+	}
+}
+
+func (s *UniqueDinosaurTestSuite) TestUpdate() {
+	{
+		s.mockDB.On(findUnique, model.UniqueDinosaurID(uniqueID)).Return(&s.unique, nil).Once()
+		s.mockDB.On(
+			updateUnique,
+			ctx,
+			s.update,
+		).
+			Return(&s.unique, nil).
+			Once()
+		r, err := s.usecase.Update(ctx, s.update)
+		if err != nil {
+			s.T().Error(err)
+			return
+		}
+
+		s.Equal(&s.unique, r)
 	}
 }
