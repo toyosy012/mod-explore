@@ -104,7 +104,7 @@ func (s *UniqueDinosaurTestSuite) BeforeTest(_ string, tableName string) {
 func (s *UniqueDinosaurTestSuite) TestFind() {
 	{
 		s.mockDB.On(
-			findVariantGroup,
+			findUnique,
 			ctx,
 			model.UniqueDinosaurID(successUniqueID),
 		).

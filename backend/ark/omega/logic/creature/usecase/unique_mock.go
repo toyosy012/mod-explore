@@ -2,12 +2,18 @@ package usecase
 
 import (
 	"context"
+	"errors"
 
 	"github.com/stretchr/testify/mock"
 
 	"mods-explore/ark/omega/logic"
 	"mods-explore/ark/omega/logic/creature/domain/model"
 	"mods-explore/ark/omega/logic/creature/domain/service"
+)
+
+var (
+	ctx = context.Background()
+	e   = errors.New("test")
 )
 
 var _ logic.Transactioner = (*mockUniqueDB)(nil)
