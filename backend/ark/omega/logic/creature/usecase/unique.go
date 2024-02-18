@@ -41,16 +41,26 @@ func (u Unique) Find(ctx context.Context, id model.UniqueDinosaurID) (*model.Uni
 
 	return unique, nil
 }
-func (u Unique) List(ctx context.Context) (model.UniqueDinosaurs, error) {
 
-	return nil, nil
+func (u Unique) List(ctx context.Context) (model.UniqueDinosaurs, error) {
+	uniques, err := u.repo.List(ctx)
+	if err != nil {
+		if errors.Is(err, service.IntervalServerError) {
+			return nil, failure.New(logic.IntervalServerError)
+		}
+		return nil, failure.Wrap(err)
+	}
+	return uniques, nil
 }
+
 func (u Unique) Create(ctx context.Context, create service.CreateUniqueDinosaur) (*model.UniqueDinosaur, error) {
 	return nil, nil
 }
+
 func (u Unique) Update(ctx context.Context, update service.UpdateUniqueDinosaur) (*model.UniqueDinosaur, error) {
 	return nil, nil
 }
+
 func (u Unique) Delete(ctx context.Context, id model.UniqueDinosaurID) error {
 	return nil
 }

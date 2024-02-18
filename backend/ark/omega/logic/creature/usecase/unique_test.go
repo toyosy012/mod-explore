@@ -37,6 +37,7 @@ func TestUniqueDinosaurSuite(t *testing.T) {
 
 const (
 	findUnique = "Select"
+	listUnique = "List"
 )
 
 func (s *UniqueDinosaurTestSuite) SetupSuite() {
@@ -145,6 +146,48 @@ func (s *UniqueDinosaurTestSuite) TestFind() {
 		).
 			Return(nil, failure.Wrap(e))
 		_, err := s.usecase.Find(ctx, model.UniqueDinosaurID(errUniqueID))
+		s.True(errors.Is(err, e))
+	}
+}
+
+func (s *UniqueDinosaurTestSuite) TestList() {
+	uniques := model.UniqueDinosaurs{
+		s.unique,
+	}
+
+	{
+		s.mockDB.On(
+			listUnique,
+			ctx,
+		).
+			Return(uniques, nil).
+			Once()
+		r, err := s.usecase.List(ctx)
+		if err != nil {
+			s.T().Error(err)
+			return
+		}
+
+		s.Equal(uniques, r)
+	}
+	{
+		s.mockDB.On(
+			listUnique,
+			ctx,
+		).
+			Return(nil, service.IntervalServerError).
+			Once()
+		_, err := s.usecase.List(ctx)
+		s.True(failure.Is(err, logic.IntervalServerError))
+	}
+	{
+		s.mockDB.On(
+			listUnique,
+			ctx,
+		).
+			Return(nil, failure.Wrap(e)).
+			Once()
+		_, err := s.usecase.List(ctx)
 		s.True(errors.Is(err, e))
 	}
 }
