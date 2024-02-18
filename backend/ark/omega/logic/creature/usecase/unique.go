@@ -21,12 +21,14 @@ type UniqueUsecase interface {
 }
 
 type Unique struct {
+	dinoCommand   service.DinosaurCommandRepository
 	uniqueQuery   service.UniqueQueryRepository
 	uniqueCommand service.UniqueCommandRepository
 }
 
 func NewUnique(injector *do.Injector) (*Unique, error) {
 	return &Unique{
+		dinoCommand:   do.MustInvoke[service.DinosaurCommandRepository](injector),
 		uniqueQuery:   do.MustInvoke[service.UniqueQueryRepository](injector),
 		uniqueCommand: do.MustInvoke[service.UniqueCommandRepository](injector),
 	}, nil

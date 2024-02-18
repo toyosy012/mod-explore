@@ -6,6 +6,7 @@ import (
 	"mods-explore/ark/omega/logic/creature/domain/model"
 )
 
+// UniqueQueryRepository 集約内のテーブルをjoinしてレコードを取得する処理を定義
 type UniqueQueryRepository interface {
 	Select(context.Context, model.UniqueDinosaurID) (*model.UniqueDinosaur, error)
 	List(context.Context) (model.UniqueDinosaurs, error)
@@ -41,24 +42,6 @@ func NewCreateUniqueDinosaur(
 	}
 }
 
-type CreateDinosaur struct {
-	name       model.DinosaurName
-	baseHealth model.Health
-	baseMelee  model.Melee
-}
-
-func NewCreateDinosaur(
-	name model.DinosaurName,
-	baseHealth model.Health,
-	baseMelee model.Melee,
-) CreateDinosaur {
-	return CreateDinosaur{
-		name:       name,
-		baseHealth: baseHealth,
-		baseMelee:  baseMelee,
-	}
-}
-
 type UpdateUniqueDinosaur struct {
 	UpdateDinosaur
 	uniqueDinoID     model.UniqueDinosaurID
@@ -87,24 +70,3 @@ func NewUpdateUniqueDinosaur(
 }
 
 func (d UpdateUniqueDinosaur) ID() model.UniqueDinosaurID { return d.uniqueDinoID }
-
-type UpdateDinosaur struct {
-	id         model.DinosaurID
-	name       model.DinosaurName
-	baseHealth model.Health
-	baseMelee  model.Melee
-}
-
-func NewUpdateDinosaur(
-	id model.DinosaurID,
-	name model.DinosaurName,
-	baseHealth model.Health,
-	baseMelee model.Melee,
-) UpdateDinosaur {
-	return UpdateDinosaur{
-		id:         id,
-		name:       name,
-		baseHealth: baseHealth,
-		baseMelee:  baseMelee,
-	}
-}
