@@ -83,6 +83,8 @@ func NewUpdateUniqueDinosaur(
 	}
 }
 
+func (d UpdateUniqueDinosaur) ID() model.UniqueDinosaurID { return d.uniqueDinoID }
+
 type UpdateDinosaur struct {
 	id         model.DinosaurID
 	name       model.DinosaurName
