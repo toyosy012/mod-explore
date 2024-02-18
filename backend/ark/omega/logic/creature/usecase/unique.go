@@ -84,5 +84,13 @@ func (u Unique) Update(ctx context.Context, update service.UpdateUniqueDinosaur)
 }
 
 func (u Unique) Delete(ctx context.Context, id model.UniqueDinosaurID) error {
-	return nil
+	return logic.UseTransactioner0(ctx, func(ctx context.Context) error {
+		if _, err := u.repo.Select(ctx, id); err != nil {
+			if errors.Is(err, service.NotFound); err != nil {
+				return failure.New(logic.NotFound)
+			}
+			return failure.Wrap(err)
+		}
+		return u.repo.Delete(ctx, id)
+	})
 }

@@ -287,3 +287,12 @@ func (s *UniqueDinosaurTestSuite) TestUpdate() {
 		s.True(errors.Is(err, e))
 	}
 }
+
+func (s *UniqueDinosaurTestSuite) TestDelete() {
+	{
+		id := model.UniqueDinosaurID(uniqueID)
+		s.mockDB.On(findUnique, ctx, id).Return(&s.unique, nil).Once()
+		s.mockDB.On("Delete", ctx, id).Return(nil).Once()
+		s.Nil(s.usecase.Delete(ctx, id))
+	}
+}
