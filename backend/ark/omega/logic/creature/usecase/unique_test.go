@@ -289,10 +289,18 @@ func (s *UniqueDinosaurTestSuite) TestUpdate() {
 }
 
 func (s *UniqueDinosaurTestSuite) TestDelete() {
+	id := model.UniqueDinosaurID(uniqueID)
+	s.mockDB.On(findUnique, ctx, id).Return(&s.unique, nil).Times(3)
 	{
-		id := model.UniqueDinosaurID(uniqueID)
-		s.mockDB.On(findUnique, ctx, id).Return(&s.unique, nil).Once()
 		s.mockDB.On("Delete", ctx, id).Return(nil).Once()
 		s.Nil(s.usecase.Delete(ctx, id))
+	}
+	{
+		s.mockDB.On("Delete", ctx, id).Return(service.IntervalServerError).Once()
+		s.True(failure.Is(s.usecase.Delete(ctx, id), logic.IntervalServerError))
+	}
+	{
+		s.mockDB.On("Delete", ctx, id).Return(e).Once()
+		s.True(errors.Is(s.usecase.Delete(ctx, id), e))
 	}
 }

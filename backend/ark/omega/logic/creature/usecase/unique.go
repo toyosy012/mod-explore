@@ -91,6 +91,12 @@ func (u Unique) Delete(ctx context.Context, id model.UniqueDinosaurID) error {
 			}
 			return failure.Wrap(err)
 		}
-		return u.repo.Delete(ctx, id)
+		if err := u.repo.Delete(ctx, id); err != nil {
+			if errors.Is(err, service.IntervalServerError) {
+				return failure.New(logic.IntervalServerError)
+			}
+			return failure.Wrap(err)
+		}
+		return nil
 	})
 }
