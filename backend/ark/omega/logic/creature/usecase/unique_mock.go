@@ -16,20 +16,20 @@ var (
 	e   = errors.New("test")
 )
 
-var _ logic.Transactioner = (*mockUniqueDB)(nil)
-var _ service.UniqueRepository = (*mockUniqueDB)(nil)
+var _ logic.Transactioner = (*mockUniqueQueryRepo)(nil)
+var _ service.UniqueQueryRepository = (*mockUniqueQueryRepo)(nil)
 
-type mockUniqueDB struct {
+type mockUniqueQueryRepo struct {
 	mock.Mock
 }
 
-func newMockUniqueDB() *mockUniqueDB { return &mockUniqueDB{} }
+func newMockUniqueQuery() *mockUniqueQueryRepo { return &mockUniqueQueryRepo{} }
 
-func (g *mockUniqueDB) WithTransaction(ctx context.Context, fn func(context.Context) (any, error)) (any, error) {
+func (g *mockUniqueQueryRepo) WithTransaction(ctx context.Context, fn func(context.Context) (any, error)) (any, error) {
 	return fn(ctx)
 }
 
-func (g *mockUniqueDB) Select(ctx context.Context, id model.UniqueDinosaurID) (*model.UniqueDinosaur, error) {
+func (g *mockUniqueQueryRepo) Select(ctx context.Context, id model.UniqueDinosaurID) (*model.UniqueDinosaur, error) {
 	args := g.Called(ctx, id)
 
 	r := args.Get(0)
@@ -39,7 +39,7 @@ func (g *mockUniqueDB) Select(ctx context.Context, id model.UniqueDinosaurID) (*
 	return args.Get(0).(*model.UniqueDinosaur), args.Error(1)
 }
 
-func (g *mockUniqueDB) List(ctx context.Context) (model.UniqueDinosaurs, error) {
+func (g *mockUniqueQueryRepo) List(ctx context.Context) (model.UniqueDinosaurs, error) {
 	args := g.Called(ctx)
 
 	r := args.Get(0)
@@ -49,7 +49,20 @@ func (g *mockUniqueDB) List(ctx context.Context) (model.UniqueDinosaurs, error) 
 	return args.Get(0).(model.UniqueDinosaurs), nil
 }
 
-func (g *mockUniqueDB) Insert(
+var _ logic.Transactioner = (*mockUniqueCommandRepo)(nil)
+var _ service.UniqueCommandRepository = (*mockUniqueCommandRepo)(nil)
+
+type mockUniqueCommandRepo struct {
+	mock.Mock
+}
+
+func newMockUniqueCommand() *mockUniqueCommandRepo { return &mockUniqueCommandRepo{} }
+
+func (g *mockUniqueCommandRepo) WithTransaction(ctx context.Context, fn func(context.Context) (any, error)) (any, error) {
+	return fn(ctx)
+}
+
+func (g *mockUniqueCommandRepo) Insert(
 	ctx context.Context, create service.CreateUniqueDinosaur,
 ) (*model.UniqueDinosaur, error) {
 	args := g.Called(ctx, create)
@@ -61,7 +74,7 @@ func (g *mockUniqueDB) Insert(
 	return args.Get(0).(*model.UniqueDinosaur), args.Error(1)
 }
 
-func (g *mockUniqueDB) Update(
+func (g *mockUniqueCommandRepo) Update(
 	ctx context.Context, update service.UpdateUniqueDinosaur,
 ) (*model.UniqueDinosaur, error) {
 	args := g.Called(ctx, update)
@@ -73,7 +86,7 @@ func (g *mockUniqueDB) Update(
 	return args.Get(0).(*model.UniqueDinosaur), args.Error(1)
 }
 
-func (g *mockUniqueDB) Delete(ctx context.Context, id model.UniqueDinosaurID) error {
+func (g *mockUniqueCommandRepo) Delete(ctx context.Context, id model.UniqueDinosaurID) error {
 	args := g.Called(ctx, id)
 
 	r := args.Get(0)

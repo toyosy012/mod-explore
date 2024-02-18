@@ -21,15 +21,19 @@ type UniqueUsecase interface {
 }
 
 type Unique struct {
-	repo service.UniqueRepository
+	uniqueQuery   service.UniqueQueryRepository
+	uniqueCommand service.UniqueCommandRepository
 }
 
 func NewUnique(injector *do.Injector) (*Unique, error) {
-	return &Unique{repo: do.MustInvoke[service.UniqueRepository](injector)}, nil
+	return &Unique{
+		uniqueQuery:   do.MustInvoke[service.UniqueQueryRepository](injector),
+		uniqueCommand: do.MustInvoke[service.UniqueCommandRepository](injector),
+	}, nil
 }
 
 func (u Unique) Find(ctx context.Context, id model.UniqueDinosaurID) (*model.UniqueDinosaur, error) {
-	unique, err := u.repo.Select(ctx, id)
+	unique, err := u.uniqueQuery.Select(ctx, id)
 	if err != nil {
 		if errors.Is(err, service.NotFound) {
 			return nil, failure.New(logic.NotFound)
@@ -43,7 +47,7 @@ func (u Unique) Find(ctx context.Context, id model.UniqueDinosaurID) (*model.Uni
 }
 
 func (u Unique) List(ctx context.Context) (model.UniqueDinosaurs, error) {
-	uniques, err := u.repo.List(ctx)
+	uniques, err := u.uniqueQuery.List(ctx)
 	if err != nil {
 		if errors.Is(err, service.IntervalServerError) {
 			return nil, failure.New(logic.IntervalServerError)
@@ -55,7 +59,7 @@ func (u Unique) List(ctx context.Context) (model.UniqueDinosaurs, error) {
 
 func (u Unique) Create(ctx context.Context, create service.CreateUniqueDinosaur) (*model.UniqueDinosaur, error) {
 	return logic.UseTransactioner(ctx, func(ctx context.Context) (*model.UniqueDinosaur, error) {
-		unique, err := u.repo.Insert(ctx, create)
+		unique, err := u.uniqueCommand.Insert(ctx, create)
 		if err != nil {
 			return nil, failure.Wrap(err)
 		}
@@ -65,14 +69,14 @@ func (u Unique) Create(ctx context.Context, create service.CreateUniqueDinosaur)
 
 func (u Unique) Update(ctx context.Context, update service.UpdateUniqueDinosaur) (*model.UniqueDinosaur, error) {
 	return logic.UseTransactioner(ctx, func(ctx context.Context) (*model.UniqueDinosaur, error) {
-		if _, err := u.repo.Select(ctx, update.ID()); err != nil {
+		if _, err := u.uniqueQuery.Select(ctx, update.ID()); err != nil {
 			if errors.Is(err, service.NotFound) {
 				return nil, failure.New(logic.NotFound)
 			}
 			return nil, failure.Wrap(err)
 		}
 
-		unique, err := u.repo.Update(ctx, update)
+		unique, err := u.uniqueCommand.Update(ctx, update)
 		if err != nil {
 			if errors.Is(err, service.IntervalServerError) {
 				return nil, failure.New(logic.IntervalServerError)
@@ -85,13 +89,13 @@ func (u Unique) Update(ctx context.Context, update service.UpdateUniqueDinosaur)
 
 func (u Unique) Delete(ctx context.Context, id model.UniqueDinosaurID) error {
 	return logic.UseTransactioner0(ctx, func(ctx context.Context) error {
-		if _, err := u.repo.Select(ctx, id); err != nil {
+		if _, err := u.uniqueQuery.Select(ctx, id); err != nil {
 			if errors.Is(err, service.NotFound); err != nil {
 				return failure.New(logic.NotFound)
 			}
 			return failure.Wrap(err)
 		}
-		if err := u.repo.Delete(ctx, id); err != nil {
+		if err := u.uniqueCommand.Delete(ctx, id); err != nil {
 			if errors.Is(err, service.IntervalServerError) {
 				return failure.New(logic.IntervalServerError)
 			}

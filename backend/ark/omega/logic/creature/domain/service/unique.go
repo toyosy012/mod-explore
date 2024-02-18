@@ -6,9 +6,12 @@ import (
 	"mods-explore/ark/omega/logic/creature/domain/model"
 )
 
-type UniqueRepository interface {
+type UniqueQueryRepository interface {
 	Select(context.Context, model.UniqueDinosaurID) (*model.UniqueDinosaur, error)
 	List(context.Context) (model.UniqueDinosaurs, error)
+}
+
+type UniqueCommandRepository interface {
 	Insert(context.Context, CreateUniqueDinosaur) (*model.UniqueDinosaur, error)
 	Update(context.Context, UpdateUniqueDinosaur) (*model.UniqueDinosaur, error)
 	Delete(context.Context, model.UniqueDinosaurID) error

@@ -24,11 +24,12 @@ const (
 type UniqueDinosaurTestSuite struct {
 	suite.Suite
 
-	mockDB  *mockUniqueDB
-	usecase UniqueUsecase
-	unique  model.UniqueDinosaur
-	create  service.CreateUniqueDinosaur
-	update  service.UpdateUniqueDinosaur
+	mockUniqueQuery   *mockUniqueQueryRepo
+	mockUniqueCommand *mockUniqueCommandRepo
+	usecase           UniqueUsecase
+	unique            model.UniqueDinosaur
+	create            service.CreateUniqueDinosaur
+	update            service.UpdateUniqueDinosaur
 }
 
 func newTestUniqueDinosaurSuite() *UniqueDinosaurTestSuite { return &UniqueDinosaurTestSuite{} }
@@ -47,9 +48,13 @@ const (
 func (s *UniqueDinosaurTestSuite) SetupSuite() {
 	injector := do.New()
 
-	mockDB := newMockUniqueDB()
-	do.ProvideValue[service.UniqueRepository](injector, mockDB)
-	s.mockDB = mockDB
+	mockUniqueQueryRepo := newMockUniqueQuery()
+	do.ProvideValue[service.UniqueQueryRepository](injector, mockUniqueQueryRepo)
+	s.mockUniqueQuery = mockUniqueQueryRepo
+	mockUniqueCommandRepo := newMockUniqueCommand()
+	do.ProvideValue[service.UniqueCommandRepository](injector, mockUniqueCommandRepo)
+	s.mockUniqueCommand = mockUniqueCommandRepo
+
 	usecase, err := NewUnique(injector)
 	if err != nil {
 		return
@@ -121,7 +126,7 @@ const (
 
 func (s *UniqueDinosaurTestSuite) TestFind() {
 	{
-		s.mockDB.On(
+		s.mockUniqueQuery.On(
 			findUnique,
 			ctx,
 			model.UniqueDinosaurID(successUniqueID),
@@ -137,7 +142,7 @@ func (s *UniqueDinosaurTestSuite) TestFind() {
 		s.Equal(&s.unique, r)
 	}
 	{
-		s.mockDB.On(
+		s.mockUniqueQuery.On(
 			findUnique,
 			ctx,
 			model.UniqueDinosaurID(notExistUniqueID),
@@ -148,7 +153,7 @@ func (s *UniqueDinosaurTestSuite) TestFind() {
 		s.True(failure.Is(err, logic.NotFound))
 	}
 	{
-		s.mockDB.On(
+		s.mockUniqueQuery.On(
 			findUnique,
 			ctx,
 			model.UniqueDinosaurID(internalServerErrUniqueID),
@@ -159,7 +164,7 @@ func (s *UniqueDinosaurTestSuite) TestFind() {
 		s.True(failure.Is(err, logic.IntervalServerError))
 	}
 	{
-		s.mockDB.On(
+		s.mockUniqueQuery.On(
 			findUnique,
 			ctx,
 			model.UniqueDinosaurID(errUniqueID),
@@ -177,7 +182,7 @@ func (s *UniqueDinosaurTestSuite) TestList() {
 	}
 
 	{
-		s.mockDB.On(
+		s.mockUniqueQuery.On(
 			listUnique,
 			ctx,
 		).
@@ -192,7 +197,7 @@ func (s *UniqueDinosaurTestSuite) TestList() {
 		s.Equal(uniques, r)
 	}
 	{
-		s.mockDB.On(
+		s.mockUniqueQuery.On(
 			listUnique,
 			ctx,
 		).
@@ -202,7 +207,7 @@ func (s *UniqueDinosaurTestSuite) TestList() {
 		s.True(failure.Is(err, logic.IntervalServerError))
 	}
 	{
-		s.mockDB.On(
+		s.mockUniqueQuery.On(
 			listUnique,
 			ctx,
 		).
@@ -215,7 +220,7 @@ func (s *UniqueDinosaurTestSuite) TestList() {
 
 func (s *UniqueDinosaurTestSuite) TestInsert() {
 	{
-		s.mockDB.On(
+		s.mockUniqueCommand.On(
 			insertUnique,
 			ctx,
 			s.create,
@@ -231,7 +236,7 @@ func (s *UniqueDinosaurTestSuite) TestInsert() {
 		s.Equal(&s.unique, r)
 	}
 	{
-		s.mockDB.On(
+		s.mockUniqueCommand.On(
 			insertUnique,
 			ctx,
 			s.create,
@@ -246,8 +251,8 @@ func (s *UniqueDinosaurTestSuite) TestInsert() {
 func (s *UniqueDinosaurTestSuite) TestUpdate() {
 	id := s.update.ID()
 	{
-		s.mockDB.On(findUnique, ctx, id).Return(&s.unique, nil).Once()
-		s.mockDB.On(
+		s.mockUniqueQuery.On(findUnique, ctx, id).Return(&s.unique, nil).Once()
+		s.mockUniqueCommand.On(
 			updateUnique,
 			ctx,
 			s.update,
@@ -263,8 +268,8 @@ func (s *UniqueDinosaurTestSuite) TestUpdate() {
 		s.Equal(&s.unique, r)
 	}
 	{
-		s.mockDB.On(findUnique, ctx, id).Return(&s.unique, nil).Once()
-		s.mockDB.On(
+		s.mockUniqueQuery.On(findUnique, ctx, id).Return(&s.unique, nil).Once()
+		s.mockUniqueCommand.On(
 			updateUnique,
 			ctx,
 			s.update,
@@ -275,8 +280,8 @@ func (s *UniqueDinosaurTestSuite) TestUpdate() {
 		s.True(failure.Is(err, logic.IntervalServerError))
 	}
 	{
-		s.mockDB.On(findUnique, ctx, id).Return(&s.unique, nil).Once()
-		s.mockDB.On(
+		s.mockUniqueQuery.On(findUnique, ctx, id).Return(&s.unique, nil).Once()
+		s.mockUniqueCommand.On(
 			updateUnique,
 			ctx,
 			s.update,
@@ -290,17 +295,17 @@ func (s *UniqueDinosaurTestSuite) TestUpdate() {
 
 func (s *UniqueDinosaurTestSuite) TestDelete() {
 	id := model.UniqueDinosaurID(uniqueID)
-	s.mockDB.On(findUnique, ctx, id).Return(&s.unique, nil).Times(3)
+	s.mockUniqueQuery.On(findUnique, ctx, id).Return(&s.unique, nil).Times(3)
 	{
-		s.mockDB.On("Delete", ctx, id).Return(nil).Once()
+		s.mockUniqueCommand.On("Delete", ctx, id).Return(nil).Once()
 		s.Nil(s.usecase.Delete(ctx, id))
 	}
 	{
-		s.mockDB.On("Delete", ctx, id).Return(service.IntervalServerError).Once()
+		s.mockUniqueCommand.On("Delete", ctx, id).Return(service.IntervalServerError).Once()
 		s.True(failure.Is(s.usecase.Delete(ctx, id), logic.IntervalServerError))
 	}
 	{
-		s.mockDB.On("Delete", ctx, id).Return(e).Once()
+		s.mockUniqueCommand.On("Delete", ctx, id).Return(e).Once()
 		s.True(errors.Is(s.usecase.Delete(ctx, id), e))
 	}
 }
