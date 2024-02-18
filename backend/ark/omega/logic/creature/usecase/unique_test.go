@@ -48,12 +48,12 @@ const (
 func (s *UniqueDinosaurTestSuite) SetupSuite() {
 	injector := do.New()
 
-	mockUniqueQueryRepo := newMockUniqueQuery()
-	do.ProvideValue[service.UniqueQueryRepository](injector, mockUniqueQueryRepo)
-	s.mockUniqueQuery = mockUniqueQueryRepo
-	mockUniqueCommandRepo := newMockUniqueCommand()
-	do.ProvideValue[service.UniqueCommandRepository](injector, mockUniqueCommandRepo)
-	s.mockUniqueCommand = mockUniqueCommandRepo
+	mockUniqueQuery := newMockUniqueQuery()
+	do.ProvideValue[service.UniqueQueryRepository](injector, mockUniqueQuery)
+	s.mockUniqueQuery = mockUniqueQuery
+	mockUniqueCommand := newMockUniqueCommand()
+	do.ProvideValue[service.UniqueCommandRepository](injector, mockUniqueCommand)
+	s.mockUniqueCommand = mockUniqueCommand
 
 	usecase, err := NewUnique(injector)
 	if err != nil {
