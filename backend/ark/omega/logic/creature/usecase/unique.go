@@ -29,7 +29,7 @@ func NewUnique(injector *do.Injector) (*Unique, error) {
 }
 
 func (u Unique) Find(ctx context.Context, id model.UniqueDinosaurID) (*model.UniqueDinosaur, error) {
-	variant, err := u.repo.Select(ctx, id)
+	unique, err := u.repo.Select(ctx, id)
 	if err != nil {
 		if errors.Is(err, service.NotFound) {
 			return nil, failure.New(logic.NotFound)
@@ -39,9 +39,10 @@ func (u Unique) Find(ctx context.Context, id model.UniqueDinosaurID) (*model.Uni
 		return nil, failure.Wrap(err)
 	}
 
-	return variant, nil
+	return unique, nil
 }
 func (u Unique) List(ctx context.Context) (model.UniqueDinosaurs, error) {
+
 	return nil, nil
 }
 func (u Unique) Create(ctx context.Context, create service.CreateUniqueDinosaur) (*model.UniqueDinosaur, error) {
