@@ -15,8 +15,8 @@ import (
 type UniqueUsecase interface {
 	Find(context.Context, model.UniqueDinosaurID) (*model.UniqueDinosaur, error)
 	List(context.Context) (model.UniqueDinosaurs, error)
-	Create(context.Context, service.CreateUniqueDinosaur) (*model.UniqueDinosaur, error)
-	Update(context.Context, service.UpdateUniqueDinosaur) (*model.UniqueDinosaur, error)
+	Create(context.Context, service.CreateCreature) (*model.UniqueDinosaur, error)
+	Update(context.Context, service.UpdateCreature) (*model.UniqueDinosaur, error)
 	Delete(context.Context, model.UniqueDinosaurID) error
 }
 
@@ -61,7 +61,7 @@ func (u Unique) List(ctx context.Context) (model.UniqueDinosaurs, error) {
 	return uniques, nil
 }
 
-func (u Unique) Create(ctx context.Context, create service.CreateUniqueDinosaur) (*model.UniqueDinosaur, error) {
+func (u Unique) Create(ctx context.Context, create service.CreateCreature) (*model.UniqueDinosaur, error) {
 	return logic.UseTransactioner(ctx, func(ctx context.Context) (*model.UniqueDinosaur, error) {
 		unique, err := u.uniqueCommand.Insert(ctx, create)
 		if err != nil {
@@ -71,7 +71,7 @@ func (u Unique) Create(ctx context.Context, create service.CreateUniqueDinosaur)
 	})
 }
 
-func (u Unique) Update(ctx context.Context, update service.UpdateUniqueDinosaur) (*model.UniqueDinosaur, error) {
+func (u Unique) Update(ctx context.Context, update service.UpdateCreature) (*model.UniqueDinosaur, error) {
 	return logic.UseTransactioner(ctx, func(ctx context.Context) (*model.UniqueDinosaur, error) {
 		if _, err := u.uniqueQuery.Select(ctx, update.ID()); err != nil {
 			if errors.Is(err, service.NotFound) {

@@ -18,6 +18,24 @@ type UniqueCommandRepository interface {
 	Delete(context.Context, model.UniqueDinosaurID) error
 }
 
+type CreateCreature struct {
+	CreateDinosaur
+	CreateUniqueDinosaur
+	CreateVariants
+}
+
+func NewCreateCreature(
+	base CreateDinosaur,
+	unique CreateUniqueDinosaur,
+	variants CreateVariants,
+) CreateCreature {
+	return CreateCreature{
+		CreateDinosaur:       base,
+		CreateUniqueDinosaur: unique,
+		CreateVariants:       variants,
+	}
+}
+
 type CreateUniqueDinosaur struct {
 	CreateDinosaur
 	name             model.UniqueName
@@ -42,8 +60,25 @@ func NewCreateUniqueDinosaur(
 	}
 }
 
-type UpdateUniqueDinosaur struct {
+type UpdateCreature struct {
 	UpdateDinosaur
+	UpdateUniqueDinosaur
+	UpdateVariants
+}
+
+func NewUpdateCreature(
+	base UpdateDinosaur,
+	unique UpdateUniqueDinosaur,
+	variants UpdateVariants,
+) UpdateCreature {
+	return UpdateCreature{
+		UpdateDinosaur:       base,
+		UpdateUniqueDinosaur: unique,
+		UpdateVariants:       variants,
+	}
+}
+
+type UpdateUniqueDinosaur struct {
 	uniqueDinoID     model.UniqueDinosaurID
 	name             model.UniqueName
 	variants         model.UniqueVariant
