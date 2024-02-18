@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"errors"
-	variantModel "mods-explore/ark/omega/logic/variant/domain/model"
 	"testing"
 
 	"github.com/morikuni/failure"
@@ -12,6 +11,7 @@ import (
 	"mods-explore/ark/omega/logic"
 	"mods-explore/ark/omega/logic/creature/domain/model"
 	"mods-explore/ark/omega/logic/creature/domain/service"
+	variantModel "mods-explore/ark/omega/logic/variant/domain/model"
 )
 
 const (
@@ -126,7 +126,8 @@ func (s *UniqueDinosaurTestSuite) TestFind() {
 			ctx,
 			model.UniqueDinosaurID(successUniqueID),
 		).
-			Return(&s.unique, nil)
+			Return(&s.unique, nil).
+			Once()
 		r, err := s.usecase.Find(ctx, model.UniqueDinosaurID(successUniqueID))
 		if err != nil {
 			s.T().Error(err)
@@ -141,7 +142,8 @@ func (s *UniqueDinosaurTestSuite) TestFind() {
 			ctx,
 			model.UniqueDinosaurID(notExistUniqueID),
 		).
-			Return(nil, service.NotFound)
+			Return(nil, service.NotFound).
+			Once()
 		_, err := s.usecase.Find(ctx, model.UniqueDinosaurID(notExistUniqueID))
 		s.True(failure.Is(err, logic.NotFound))
 	}
@@ -151,7 +153,8 @@ func (s *UniqueDinosaurTestSuite) TestFind() {
 			ctx,
 			model.UniqueDinosaurID(internalServerErrUniqueID),
 		).
-			Return(nil, service.IntervalServerError)
+			Return(nil, service.IntervalServerError).
+			Once()
 		_, err := s.usecase.Find(ctx, model.UniqueDinosaurID(internalServerErrUniqueID))
 		s.True(failure.Is(err, logic.IntervalServerError))
 	}
@@ -161,7 +164,8 @@ func (s *UniqueDinosaurTestSuite) TestFind() {
 			ctx,
 			model.UniqueDinosaurID(errUniqueID),
 		).
-			Return(nil, failure.Wrap(e))
+			Return(nil, failure.Wrap(e)).
+			Once()
 		_, err := s.usecase.Find(ctx, model.UniqueDinosaurID(errUniqueID))
 		s.True(errors.Is(err, e))
 	}
@@ -240,8 +244,9 @@ func (s *UniqueDinosaurTestSuite) TestInsert() {
 }
 
 func (s *UniqueDinosaurTestSuite) TestUpdate() {
+	id := s.update.ID()
 	{
-		s.mockDB.On(findUnique, model.UniqueDinosaurID(uniqueID)).Return(&s.unique, nil).Once()
+		s.mockDB.On(findUnique, ctx, id).Return(&s.unique, nil).Once()
 		s.mockDB.On(
 			updateUnique,
 			ctx,
