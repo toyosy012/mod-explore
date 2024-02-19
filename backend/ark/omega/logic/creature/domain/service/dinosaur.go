@@ -7,8 +7,8 @@ import (
 )
 
 type DinosaurCommandRepository interface {
-	Insert(context.Context, CreateDinosaur) (*ResponseDinosaur, error)
-	Update(context.Context, UpdateDinosaur) (*ResponseDinosaur, error)
+	Insert(context.Context, CreateDinosaur) error
+	Update(context.Context, UpdateDinosaur) error
 	Delete(context.Context, model.DinosaurID) error
 }
 
@@ -17,6 +17,10 @@ type CreateDinosaur struct {
 	baseHealth model.Health
 	baseMelee  model.Melee
 }
+
+func (d CreateDinosaur) Name() model.DinosaurName { return d.name }
+func (d CreateDinosaur) Health() model.Health     { return d.baseHealth }
+func (d CreateDinosaur) Melee() model.Melee       { return d.baseMelee }
 
 func NewCreateDinosaur(
 	name model.DinosaurName,
@@ -36,6 +40,11 @@ type UpdateDinosaur struct {
 	baseHealth model.Health
 	baseMelee  model.Melee
 }
+
+func (d UpdateDinosaur) ID() model.DinosaurID     { return d.id }
+func (d UpdateDinosaur) Name() model.DinosaurName { return d.name }
+func (d UpdateDinosaur) Health() model.Health     { return d.baseHealth }
+func (d UpdateDinosaur) Melee() model.Melee       { return d.baseMelee }
 
 func NewUpdateDinosaur(
 	id model.DinosaurID,
