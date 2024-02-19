@@ -18,6 +18,10 @@ type CreateDinosaur struct {
 	baseMelee  model.Melee
 }
 
+func (d CreateDinosaur) Name() model.DinosaurName { return d.name }
+func (d CreateDinosaur) Health() model.Health     { return d.baseHealth }
+func (d CreateDinosaur) Melee() model.Melee       { return d.baseMelee }
+
 func NewCreateDinosaur(
 	name model.DinosaurName,
 	baseHealth model.Health,
@@ -36,6 +40,11 @@ type UpdateDinosaur struct {
 	baseHealth model.Health
 	baseMelee  model.Melee
 }
+
+func (d UpdateDinosaur) ID() model.DinosaurID     { return d.id }
+func (d UpdateDinosaur) Name() model.DinosaurName { return d.name }
+func (d UpdateDinosaur) Health() model.Health     { return d.baseHealth }
+func (d UpdateDinosaur) Melee() model.Melee       { return d.baseMelee }
 
 func NewUpdateDinosaur(
 	id model.DinosaurID,
