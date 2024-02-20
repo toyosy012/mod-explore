@@ -19,20 +19,64 @@ type UniqueCommandRepository interface {
 }
 
 type CreateCreature struct {
-	CreateDinosaur
-	CreateUniqueDinosaur
-	CreateVariants
+	DinoName   model.DinosaurName
+	BaseHealth model.Health
+	BaseMelee  model.Melee
+
+	UniqueName       model.UniqueName
+	HealthMultiplier model.UniqueMultiplier[model.Health]
+	DamageMultiplier model.UniqueMultiplier[model.Melee]
+
+	UniqueID model.UniqueDinosaurID
+	Variants model.UniqueVariant
 }
 
 func NewCreateCreature(
-	base CreateDinosaur,
-	unique CreateUniqueDinosaur,
-	variants CreateVariants,
+	dinoName model.DinosaurName,
+	baseHealth model.Health,
+	baseMelee model.Melee,
+	uniqueName model.UniqueName,
+	healthMultiplier model.UniqueMultiplier[model.Health],
+	damageMultiplier model.UniqueMultiplier[model.Melee],
+	uniqueID model.UniqueDinosaurID,
+	variants model.UniqueVariant,
 ) CreateCreature {
 	return CreateCreature{
-		CreateDinosaur:       base,
-		CreateUniqueDinosaur: unique,
-		CreateVariants:       variants,
+		DinoName:         dinoName,
+		BaseHealth:       baseHealth,
+		BaseMelee:        baseMelee,
+		UniqueName:       uniqueName,
+		HealthMultiplier: healthMultiplier,
+		DamageMultiplier: damageMultiplier,
+		UniqueID:         uniqueID,
+		Variants:         variants,
+	}
+}
+
+func (c CreateCreature) Dino() CreateDinosaur {
+	return CreateDinosaur{
+		name:       c.DinoName,
+		baseHealth: c.BaseHealth,
+		baseMelee:  c.BaseMelee,
+	}
+}
+
+func (c CreateCreature) UniqueVariants() CreateVariants {
+	return CreateVariants{
+		variants: c.Variants,
+	}
+}
+
+func (c CreateCreature) UniqueDinosaur(
+	dinoID model.DinosaurID,
+	uniqueVariantID model.UniqueVariantID,
+) CreateUniqueDinosaur {
+	return CreateUniqueDinosaur{
+		name:             c.UniqueName,
+		healthMultiplier: c.HealthMultiplier,
+		damageMultiplier: c.DamageMultiplier,
+		dinosaurID:       dinoID,
+		uniqueVariantID:  uniqueVariantID,
 	}
 }
 
@@ -40,17 +84,23 @@ type CreateUniqueDinosaur struct {
 	name             model.UniqueName
 	healthMultiplier model.UniqueMultiplier[model.Health]
 	damageMultiplier model.UniqueMultiplier[model.Melee]
+	dinosaurID       model.DinosaurID
+	uniqueVariantID  model.UniqueVariantID
 }
 
 func NewCreateUniqueDinosaur(
 	name model.UniqueName,
 	healthMultiplier model.UniqueMultiplier[model.Health],
 	damageMultiplier model.UniqueMultiplier[model.Melee],
+	dinosaurID model.DinosaurID,
+	uniqueVariantID model.UniqueVariantID,
 ) CreateUniqueDinosaur {
 	return CreateUniqueDinosaur{
 		name:             name,
 		healthMultiplier: healthMultiplier,
 		damageMultiplier: damageMultiplier,
+		dinosaurID:       dinosaurID,
+		uniqueVariantID:  uniqueVariantID,
 	}
 }
 
