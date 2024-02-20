@@ -105,52 +105,49 @@ func (u Unique) Create(ctx context.Context, create service.CreateCreature) (_ *m
 	})
 }
 
-func (u Unique) Update(ctx context.Context, update service.UpdateCreature) (*model.UniqueDinosaur, error) {
+func (u Unique) Update(ctx context.Context, update service.UpdateCreature) (_ *model.UniqueDinosaur, err error) {
 	return logic.UseTransactioner(ctx, func(ctx context.Context) (*model.UniqueDinosaur, error) {
-		if _, err := u.uniqueQuery.Select(ctx, update.ID()); err != nil {
+		if _, err = u.uniqueQuery.Select(ctx, update.Unique().ID()); err != nil {
 			if errors.Is(err, service.NotFound) {
 				return nil, failure.New(logic.NotFound)
 			}
 			return nil, failure.Wrap(err)
 		}
 
-		d, err := u.dinoCommand.Update(ctx, update.UpdateDinosaur)
-		if err != nil {
+		if err = u.dinoCommand.Update(ctx, update.Dino()); err != nil {
 			if errors.Is(err, service.IntervalServerError) {
 				return nil, failure.New(logic.IntervalServerError)
 			}
 			return nil, failure.Wrap(err)
 		}
 
-		unique, err := u.uniqueCommand.Update(ctx, update.UpdateUniqueDinosaur)
-		if err != nil {
+		if err = u.uniqueCommand.Update(ctx, update.Unique()); err != nil {
 			if errors.Is(err, service.IntervalServerError) {
 				return nil, failure.New(logic.IntervalServerError)
 			}
 			return nil, failure.Wrap(err)
 		}
 
-		v, err := u.variantCommand.Update(ctx, update.UpdateVariants)
-		if err != nil {
+		if err = u.variantCommand.Update(ctx, update.Variants()); err != nil {
 			if errors.Is(err, service.IntervalServerError) {
 				return nil, failure.New(logic.IntervalServerError)
 			}
 			return nil, failure.Wrap(err)
 		}
 
-		dino := model.NewDinosaur(d.ID(), d.Name(), d.Health(), d.Melee())
-		vs := lo.Map(v.Values(), func(item model.DinosaurVariant, _ int) model.DinosaurVariant {
-			return model.NewDinosaurVariant(
-				variantModel.NewVariant(item.ID(), item.Group(), item.Name()),
-				model.VariantDescriptions{},
-			)
-		})
+		resp, err := u.uniqueQuery.Select(ctx, update.Unique().ID())
+		if err != nil {
+			if errors.Is(err, service.NotFound) {
+				return nil, failure.New(logic.NotFound)
+			}
+			if errors.Is(err, service.IntervalServerError) {
+				return nil, failure.New(logic.IntervalServerError)
+			}
+			return nil, failure.Wrap(err)
+		}
 
-		resp := model.NewUniqueDinosaur(
-			dino, unique.ID(), unique.Name(), vs, unique.HealthMultiplier(), unique.MeleeMultiplier(),
-		)
-
-		return &resp, nil
+		unique := resp.ToUniqueDinosaur()
+		return &unique, nil
 	})
 }
 
