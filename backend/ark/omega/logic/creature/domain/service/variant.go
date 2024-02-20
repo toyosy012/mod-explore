@@ -13,49 +13,41 @@ type VariantsCommandRepository interface {
 }
 
 type CreateVariants struct {
-	uniqueID model.UniqueDinosaurID
 	variants model.UniqueVariant
 }
 
-func NewCreateVariants(uniqueID model.UniqueDinosaurID, variants model.UniqueVariant) CreateVariants {
+func NewCreateVariants(variants model.UniqueVariant) CreateVariants {
 	return CreateVariants{
-		uniqueID: uniqueID,
 		variants: variants,
 	}
 }
 
 type UpdateVariants struct {
 	variantID model.UniqueVariantID
-	uniqueID  model.UniqueDinosaurID
 	variants  model.UniqueVariant
 }
 
 func NewUpdateVariants(
 	variantID model.UniqueVariantID,
-	uniqueID model.UniqueDinosaurID,
 	variants model.UniqueVariant,
 ) UpdateVariants {
 	return UpdateVariants{
 		variantID: variantID,
-		uniqueID:  uniqueID,
 		variants:  variants,
 	}
 }
 
 type ResponseVariants struct {
-	variantID model.UniqueVariantID
-	uniqueID  model.UniqueDinosaurID
-	variants  []model.DinosaurVariant
+	id       model.UniqueVariantID
+	variants []model.DinosaurVariant
 }
 
 func NewResponseVariants(
 	variantID model.UniqueVariantID,
-	uniqueID model.UniqueDinosaurID,
 	variants []model.DinosaurVariant,
 ) ResponseVariants {
-	return ResponseVariants{variantID: variantID, uniqueID: uniqueID, variants: variants}
+	return ResponseVariants{id: variantID, variants: variants}
 }
 
-func (v ResponseVariants) ID() model.UniqueVariantID        { return v.variantID }
-func (v ResponseVariants) UniqueID() model.UniqueDinosaurID { return v.uniqueID }
-func (v ResponseVariants) Values() []model.DinosaurVariant  { return v.variants }
+func (v ResponseVariants) ID() model.UniqueVariantID       { return v.id }
+func (v ResponseVariants) Values() []model.DinosaurVariant { return v.variants }
