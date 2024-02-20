@@ -7,8 +7,8 @@ import (
 )
 
 type VariantsCommandRepository interface {
-	Insert(context.Context, CreateVariants) (*ResponseVariants, error)
-	Update(context.Context, UpdateVariants) (*ResponseVariants, error)
+	Insert(context.Context, CreateVariants) (model.UniqueVariantID, error)
+	Update(context.Context, UpdateVariants) error
 	Delete(context.Context, model.UniqueVariantID) error
 }
 
