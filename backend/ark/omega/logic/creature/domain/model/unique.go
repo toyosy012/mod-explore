@@ -13,26 +13,29 @@ type UniqueDinosaur struct {
 
 	uniqueDinoID     UniqueDinosaurID
 	uniqueName       UniqueName
-	variants         UniqueVariant
 	healthMultiplier UniqueMultiplier[Health]
 	damageMultiplier UniqueMultiplier[Melee]
+	variantsID       UniqueVariantID
+	variants         UniqueVariant
 }
 
 func NewUniqueDinosaur(
 	base Dinosaur,
 	id UniqueDinosaurID,
 	name UniqueName,
-	variants UniqueVariant,
 	healthMultiplier UniqueMultiplier[Health],
 	damageMultiplier UniqueMultiplier[Melee],
+	variantsID UniqueVariantID,
+	variants UniqueVariant,
 ) UniqueDinosaur {
 	return UniqueDinosaur{
 		Dinosaur:         base,
 		uniqueDinoID:     id,
 		uniqueName:       name,
-		variants:         variants,
 		healthMultiplier: healthMultiplier,
 		damageMultiplier: damageMultiplier,
+		variantsID:       variantsID,
+		variants:         variants,
 	}
 }
 
