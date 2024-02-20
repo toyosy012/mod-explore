@@ -175,6 +175,8 @@ type UpdateUniqueDinosaur struct {
 	damageMultiplier model.UniqueMultiplier[model.Melee]
 }
 
+func (d UpdateUniqueDinosaur) ID() model.UniqueDinosaurID { return d.uniqueDinoID }
+
 func NewUpdateUniqueDinosaur(
 	uniqueDinoID model.UniqueDinosaurID,
 	name model.UniqueName,
