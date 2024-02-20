@@ -63,33 +63,45 @@ func (u Unique) List(ctx context.Context) (model.UniqueDinosaurs, error) {
 	return uniques, nil
 }
 
-func (u Unique) Create(ctx context.Context, create service.CreateCreature) (*model.UniqueDinosaur, error) {
+func (u Unique) Create(ctx context.Context, create service.CreateCreature) (_ *model.UniqueDinosaur, err error) {
 	return logic.UseTransactioner(ctx, func(ctx context.Context) (*model.UniqueDinosaur, error) {
-		d, err := u.dinoCommand.Insert(ctx, create.CreateDinosaur)
-		if err != nil {
+		var dinoID model.DinosaurID
+		if dinoID, err = u.dinoCommand.Insert(
+			ctx,
+			create.Dino(),
+		); err != nil {
 			return nil, failure.Wrap(err)
 		}
-		unique, err := u.uniqueCommand.Insert(ctx, create.CreateUniqueDinosaur)
-		if err != nil {
+		var uniqueVariantID model.UniqueVariantID
+		if uniqueVariantID, err = u.variantCommand.Insert(
+			ctx,
+			create.UniqueVariants(),
+		); err != nil {
 			return nil, failure.Wrap(err)
 		}
-		v, err := u.variantCommand.Insert(ctx, create.CreateVariants)
-		if err != nil {
+		var uniqueID model.UniqueDinosaurID
+		if uniqueID, err = u.uniqueCommand.Insert(
+			ctx,
+			service.NewCreateUniqueDinosaur(
+				create.UniqueName, create.HealthMultiplier, create.DamageMultiplier, dinoID, uniqueVariantID,
+			),
+		); err != nil {
 			return nil, failure.Wrap(err)
 		}
 
-		dino := model.NewDinosaur(d.ID(), d.Name(), d.Health(), d.Melee())
-		vs := lo.Map(v.Values(), func(item model.DinosaurVariant, _ int) model.DinosaurVariant {
-			return model.NewDinosaurVariant(
-				variantModel.NewVariant(item.ID(), item.Group(), item.Name()),
-				model.VariantDescriptions{},
-			)
-		})
+		resp, err := u.uniqueQuery.Select(ctx, uniqueID)
+		if err != nil {
+			if errors.Is(err, service.NotFound) {
+				return nil, failure.New(logic.NotFound)
+			}
+			if errors.Is(err, service.IntervalServerError) {
+				return nil, failure.New(logic.IntervalServerError)
+			}
+			return nil, failure.Wrap(err)
+		}
 
-		resp := model.NewUniqueDinosaur(
-			dino, unique.ID(), unique.Name(), vs, unique.HealthMultiplier(), unique.MeleeMultiplier(),
-		)
-		return &resp, nil
+		unique := resp.ToUniqueDinosaur()
+		return &unique, nil
 	})
 }
 
