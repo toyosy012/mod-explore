@@ -11,7 +11,6 @@ import (
 	"mods-explore/ark/omega/logic"
 	"mods-explore/ark/omega/logic/creature/domain/model"
 	"mods-explore/ark/omega/logic/creature/domain/service"
-	variantModel "mods-explore/ark/omega/logic/variant/domain/model"
 )
 
 type UniqueUsecase interface {
@@ -39,7 +38,7 @@ func NewUnique(injector *do.Injector) (*Unique, error) {
 }
 
 func (u Unique) Find(ctx context.Context, id model.UniqueDinosaurID) (*model.UniqueDinosaur, error) {
-	unique, err := u.uniqueQuery.Select(ctx, id)
+	resp, err := u.uniqueQuery.Select(ctx, id)
 	if err != nil {
 		if errors.Is(err, service.NotFound) {
 			return nil, failure.New(logic.NotFound)
@@ -49,7 +48,8 @@ func (u Unique) Find(ctx context.Context, id model.UniqueDinosaurID) (*model.Uni
 		return nil, failure.Wrap(err)
 	}
 
-	return unique, nil
+	unique := resp.ToUniqueDinosaur()
+	return &unique, nil
 }
 
 func (u Unique) List(ctx context.Context) (model.UniqueDinosaurs, error) {
