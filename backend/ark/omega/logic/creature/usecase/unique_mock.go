@@ -31,26 +31,22 @@ func (g *mockDinoCommandRepo) WithTransaction(ctx context.Context, fn func(conte
 
 func (g *mockDinoCommandRepo) Insert(
 	ctx context.Context, create service.CreateDinosaur,
-) (*service.ResponseDinosaur, error) {
+) (model.DinosaurID, error) {
 	args := g.Called(ctx, create)
 
 	r := args.Get(0)
-	if r == nil {
-		return nil, args.Error(1)
+	if nil == r {
+		return 0, args.Error(1)
 	}
-	return args.Get(0).(*service.ResponseDinosaur), args.Error(1)
+	return r.(model.DinosaurID), nil
 }
 
 func (g *mockDinoCommandRepo) Update(
 	ctx context.Context, update service.UpdateDinosaur,
-) (*service.ResponseDinosaur, error) {
+) error {
 	args := g.Called(ctx, update)
 
-	r := args.Get(0)
-	if r == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*service.ResponseDinosaur), args.Error(1)
+	return args.Error(0)
 }
 
 func (g *mockDinoCommandRepo) Delete(ctx context.Context, id model.DinosaurID) error {
@@ -76,24 +72,24 @@ func (g *mockUniqueQueryRepo) WithTransaction(ctx context.Context, fn func(conte
 	return fn(ctx)
 }
 
-func (g *mockUniqueQueryRepo) Select(ctx context.Context, id model.UniqueDinosaurID) (*model.UniqueDinosaur, error) {
+func (g *mockUniqueQueryRepo) Select(ctx context.Context, id model.UniqueDinosaurID) (*service.ResponseCreature, error) {
 	args := g.Called(ctx, id)
 
 	r := args.Get(0)
 	if r == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*model.UniqueDinosaur), args.Error(1)
+	return args.Get(0).(*service.ResponseCreature), args.Error(1)
 }
 
-func (g *mockUniqueQueryRepo) List(ctx context.Context) (model.UniqueDinosaurs, error) {
+func (g *mockUniqueQueryRepo) List(ctx context.Context) (service.ResponseCreatures, error) {
 	args := g.Called(ctx)
 
 	r := args.Get(0)
 	if r == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(model.UniqueDinosaurs), nil
+	return args.Get(0).(service.ResponseCreatures), nil
 }
 
 var _ logic.Transactioner = (*mockUniqueCommandRepo)(nil)
@@ -111,26 +107,22 @@ func (g *mockUniqueCommandRepo) WithTransaction(ctx context.Context, fn func(con
 
 func (g *mockUniqueCommandRepo) Insert(
 	ctx context.Context, create service.CreateUniqueDinosaur,
-) (*service.ResponseUnique, error) {
+) (model.UniqueDinosaurID, error) {
 	args := g.Called(ctx, create)
 
 	r := args.Get(0)
 	if r == nil {
-		return nil, args.Error(1)
+		return 0, args.Error(1)
 	}
-	return args.Get(0).(*service.ResponseUnique), args.Error(1)
+	return args.Get(0).(model.UniqueDinosaurID), args.Error(1)
 }
 
 func (g *mockUniqueCommandRepo) Update(
 	ctx context.Context, update service.UpdateUniqueDinosaur,
-) (*service.ResponseUnique, error) {
+) error {
 	args := g.Called(ctx, update)
 
-	r := args.Get(0)
-	if r == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*service.ResponseUnique), args.Error(1)
+	return args.Error(0)
 }
 
 func (g *mockUniqueCommandRepo) Delete(ctx context.Context, id model.UniqueDinosaurID) error {
@@ -158,26 +150,22 @@ func (e *mockVariantsCommandRepo) WithTransaction(ctx context.Context, fn func(c
 
 func (e *mockVariantsCommandRepo) Insert(
 	ctx context.Context, create service.CreateVariants,
-) (*service.ResponseVariants, error) {
+) (model.UniqueVariantID, error) {
 	args := e.Called(ctx, create)
 
 	r := args.Get(0)
 	if r == nil {
-		return nil, args.Error(1)
+		return 0, args.Error(1)
 	}
-	return args.Get(0).(*service.ResponseVariants), args.Error(1)
+	return args.Get(0).(model.UniqueVariantID), args.Error(1)
 }
 
 func (e *mockVariantsCommandRepo) Update(
 	ctx context.Context, update service.UpdateVariants,
-) (*service.ResponseVariants, error) {
+) error {
 	args := e.Called(ctx, update)
 
-	r := args.Get(0)
-	if r == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*service.ResponseVariants), args.Error(1)
+	return args.Error(0)
 }
 
 func (e *mockVariantsCommandRepo) Delete(ctx context.Context, id model.UniqueVariantID) error {

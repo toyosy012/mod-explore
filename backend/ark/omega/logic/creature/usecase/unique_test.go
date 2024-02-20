@@ -37,7 +37,8 @@ type UniqueDinosaurTestSuite struct {
 	uniqueResponse   service.ResponseUnique
 	variantsResponse service.ResponseVariants
 
-	unique model.UniqueDinosaur
+	response service.ResponseCreature
+	unique   model.UniqueDinosaur
 }
 
 func newTestUniqueDinosaurSuite() *UniqueDinosaurTestSuite { return &UniqueDinosaurTestSuite{} }
@@ -103,29 +104,31 @@ func (s *UniqueDinosaurTestSuite) SetupSuite() {
 			),
 		}
 		{
-			s.unique = model.NewUniqueDinosaur(
-				model.NewDinosaur(creatureID, creatureName, h, m),
-				uniqueID, uniqueName, variants, *healthMultiplier, *meleeMultiplier,
-			)
-		}
-		{
 			s.create = service.NewCreateCreature(
-				service.NewCreateDinosaur(creatureName, h, m),
-				service.NewCreateUniqueDinosaur(uniqueName, *healthMultiplier, *meleeMultiplier),
-				service.NewCreateVariants(uniqueID, variants),
+				creatureName, h, m, uniqueName, *healthMultiplier, *meleeMultiplier, uniqueID, variants,
 			)
 		}
 		{
 			s.update = service.NewUpdateCreature(
-				service.NewUpdateDinosaur(creatureID, creatureName, health, melee),
-				service.NewUpdateUniqueDinosaur(uniqueID, uniqueName, *healthMultiplier, *meleeMultiplier),
-				service.NewUpdateVariants(variantsID, uniqueID, variants),
+				creatureID, creatureName, health, melee,
+				uniqueID, uniqueName, *healthMultiplier, *meleeMultiplier,
+				variantsID, variants,
 			)
 		}
 		{
 			s.dinoResponse = service.NewResponseDinosaur(creatureID, creatureName, h, m)
 			s.uniqueResponse = service.NewResponseUnique(uniqueID, uniqueName, *healthMultiplier, *meleeMultiplier)
-			s.variantsResponse = service.NewResponseVariants(variantsID, uniqueID, variants)
+			s.variantsResponse = service.NewResponseVariants(variantsID, variants)
+
+			s.response = service.ResponseCreature{
+				ResponseDinosaur: s.dinoResponse,
+				ResponseVariants: s.variantsResponse,
+				ResponseUnique:   s.uniqueResponse,
+			}
+			s.unique = model.NewUniqueDinosaur(
+				model.NewDinosaur(creatureID, creatureName, h, m),
+				uniqueID, uniqueName, *healthMultiplier, *meleeMultiplier, variantsID, variants,
+			)
 		}
 	}
 }
@@ -155,7 +158,7 @@ func (s *UniqueDinosaurTestSuite) TestFind() {
 			ctx,
 			model.UniqueDinosaurID(successUniqueID),
 		).
-			Return(&s.unique, nil).
+			Return(&s.response, nil).
 			Once()
 		r, err := s.usecase.Find(ctx, model.UniqueDinosaurID(successUniqueID))
 		if err != nil {
@@ -201,16 +204,12 @@ func (s *UniqueDinosaurTestSuite) TestFind() {
 }
 
 func (s *UniqueDinosaurTestSuite) TestList() {
-	uniques := model.UniqueDinosaurs{
-		s.unique,
-	}
-
 	{
 		s.mockUniqueQuery.On(
 			list,
 			ctx,
 		).
-			Return(uniques, nil).
+			Return(service.ResponseCreatures{s.response}, nil).
 			Once()
 		r, err := s.usecase.List(ctx)
 		if err != nil {
@@ -218,7 +217,7 @@ func (s *UniqueDinosaurTestSuite) TestList() {
 			return
 		}
 
-		s.Equal(uniques, r)
+		s.Equal(model.UniqueDinosaurs{s.unique}, r)
 	}
 	{
 		s.mockUniqueQuery.On(
@@ -247,25 +246,32 @@ func (s *UniqueDinosaurTestSuite) TestInsert() {
 		s.mockDinoCommand.On(
 			insert,
 			ctx,
-			s.create.CreateDinosaur,
+			s.create.Dino(),
 		).
-			Return(&s.dinoResponse, nil).
-			Once()
-		s.mockUniqueCommand.On(
-			insert,
-			ctx,
-			s.create.CreateUniqueDinosaur,
-		).
-			Return(&s.uniqueResponse, nil).
+			Return(model.DinosaurID(creatureID), nil).
 			Once()
 		s.mockVariantsCommand.On(
 			insert,
 			ctx,
-			s.create.CreateVariants,
+			s.create.UniqueVariants(),
 		).
-			Return(&s.variantsResponse, nil).
+			Return(model.UniqueVariantID(variantsID), nil).
+			Once()
+		s.mockUniqueCommand.On(
+			insert,
+			ctx,
+			s.create.UniqueDinosaur(creatureID, variantsID),
+		).
+			Return(model.UniqueDinosaurID(uniqueID), nil).
 			Once()
 
+		s.mockUniqueQuery.On(
+			find,
+			ctx,
+			model.UniqueDinosaurID(uniqueID),
+		).
+			Return(&s.response, nil).
+			Once()
 		r, err := s.usecase.Create(ctx, s.create)
 		if err != nil {
 			s.T().Error(err)
@@ -278,7 +284,7 @@ func (s *UniqueDinosaurTestSuite) TestInsert() {
 		s.mockDinoCommand.On(
 			insert,
 			ctx,
-			s.create.CreateDinosaur,
+			s.create.Dino(),
 		).
 			Return(nil, e).
 			Once()
@@ -289,39 +295,39 @@ func (s *UniqueDinosaurTestSuite) TestInsert() {
 		s.mockDinoCommand.On(
 			insert,
 			ctx,
-			s.create.CreateDinosaur,
+			s.create.Dino(),
 		).
-			Return(&s.dinoResponse, nil).
-			Once()
-		s.mockUniqueCommand.On(
-			insert,
-			ctx,
-			s.create.CreateUniqueDinosaur,
-		).
-			Return(nil, e).
-			Once()
-		_, err := s.usecase.Create(ctx, s.create)
-		s.True(errors.Is(err, e))
-	}
-	{
-		s.mockDinoCommand.On(
-			insert,
-			ctx,
-			s.create.CreateDinosaur,
-		).
-			Return(&s.dinoResponse, nil).
-			Once()
-		s.mockUniqueCommand.On(
-			insert,
-			ctx,
-			s.create.CreateUniqueDinosaur,
-		).
-			Return(&s.uniqueResponse, nil).
+			Return(model.DinosaurID(creatureID), nil).
 			Once()
 		s.mockVariantsCommand.On(
 			insert,
 			ctx,
-			s.create.CreateVariants,
+			s.create.UniqueVariants(),
+		).
+			Return(nil, e).
+			Once()
+		_, err := s.usecase.Create(ctx, s.create)
+		s.True(errors.Is(err, e))
+	}
+	{
+		s.mockDinoCommand.On(
+			insert,
+			ctx,
+			s.create.Dino(),
+		).
+			Return(model.DinosaurID(creatureID), nil).
+			Once()
+		s.mockUniqueCommand.On(
+			insert,
+			ctx,
+			s.create.UniqueDinosaur(creatureID, variantsID),
+		).
+			Return(model.UniqueDinosaurID(uniqueID), nil).
+			Once()
+		s.mockVariantsCommand.On(
+			insert,
+			ctx,
+			s.create.UniqueVariants(),
 		).
 			Return(nil, e).
 			Once()
@@ -331,30 +337,31 @@ func (s *UniqueDinosaurTestSuite) TestInsert() {
 }
 
 func (s *UniqueDinosaurTestSuite) TestUpdate() {
-	id := s.update.ID()
-	s.mockUniqueQuery.On(find, ctx, id).Return(&s.unique, nil).Times(7)
+	id := s.update.Unique().ID()
+	s.mockUniqueQuery.On(find, ctx, id).Return(&s.response, nil).Times(7)
 	{
 		s.mockDinoCommand.On(
 			update,
 			ctx,
-			s.update.UpdateDinosaur,
+			s.update.Dino(),
 		).
-			Return(&s.dinoResponse, nil).
-			Once()
-		s.mockUniqueCommand.On(
-			update,
-			ctx,
-			s.update.UpdateUniqueDinosaur,
-		).
-			Return(&s.uniqueResponse, nil).
+			Return(nil).
 			Once()
 		s.mockVariantsCommand.On(
 			update,
 			ctx,
-			s.update.UpdateVariants,
+			s.update.Variants(),
 		).
-			Return(&s.variantsResponse, nil).
+			Return(nil).
 			Once()
+		s.mockUniqueCommand.On(
+			update,
+			ctx,
+			s.update.Unique(),
+		).
+			Return(nil).
+			Once()
+		s.mockUniqueQuery.On(find, ctx, id).Return(&s.response, nil).Once()
 		r, err := s.usecase.Update(ctx, s.update)
 		if err != nil {
 			s.T().Error(err)
@@ -367,9 +374,9 @@ func (s *UniqueDinosaurTestSuite) TestUpdate() {
 		s.mockDinoCommand.On(
 			update,
 			ctx,
-			s.update.UpdateDinosaur,
+			s.update.Dino(),
 		).
-			Return(nil, service.IntervalServerError).
+			Return(service.IntervalServerError).
 			Once()
 		_, err := s.usecase.Update(ctx, s.update)
 		s.True(failure.Is(err, logic.IntervalServerError))
@@ -378,16 +385,16 @@ func (s *UniqueDinosaurTestSuite) TestUpdate() {
 		s.mockDinoCommand.On(
 			update,
 			ctx,
-			s.update.UpdateDinosaur,
+			s.update.Dino(),
 		).
-			Return(&s.dinoResponse, nil).
+			Return(nil).
 			Once()
 		s.mockUniqueCommand.On(
 			update,
 			ctx,
-			s.update.UpdateUniqueDinosaur,
+			s.update.Unique(),
 		).
-			Return(nil, service.IntervalServerError).
+			Return(service.IntervalServerError).
 			Once()
 		_, err := s.usecase.Update(ctx, s.update)
 		s.True(failure.Is(err, logic.IntervalServerError))
@@ -396,23 +403,23 @@ func (s *UniqueDinosaurTestSuite) TestUpdate() {
 		s.mockDinoCommand.On(
 			update,
 			ctx,
-			s.update.UpdateDinosaur,
+			s.update.Dino(),
 		).
-			Return(&s.dinoResponse, nil).
+			Return(nil).
 			Once()
 		s.mockUniqueCommand.On(
 			update,
 			ctx,
-			s.update.UpdateUniqueDinosaur,
+			s.update.Unique(),
 		).
-			Return(&s.uniqueResponse, nil).
+			Return(nil).
 			Once()
 		s.mockVariantsCommand.On(
 			update,
 			ctx,
-			s.update.UpdateVariants,
+			s.update.Variants(),
 		).
-			Return(nil, service.IntervalServerError).
+			Return(service.IntervalServerError).
 			Once()
 		_, err := s.usecase.Update(ctx, s.update)
 		s.True(failure.Is(err, logic.IntervalServerError))
@@ -422,9 +429,9 @@ func (s *UniqueDinosaurTestSuite) TestUpdate() {
 		s.mockDinoCommand.On(
 			update,
 			ctx,
-			s.update.UpdateDinosaur,
+			s.update.Dino(),
 		).
-			Return(nil, e).
+			Return(e).
 			Once()
 		_, err := s.usecase.Update(ctx, s.update)
 		s.True(errors.Is(err, e))
@@ -433,16 +440,16 @@ func (s *UniqueDinosaurTestSuite) TestUpdate() {
 		s.mockDinoCommand.On(
 			update,
 			ctx,
-			s.update.UpdateDinosaur,
+			s.update.Dino(),
 		).
-			Return(&s.dinoResponse, nil).
+			Return(nil).
 			Once()
 		s.mockUniqueCommand.On(
 			update,
 			ctx,
-			s.update.UpdateUniqueDinosaur,
+			s.update.Unique(),
 		).
-			Return(nil, e).
+			Return(e).
 			Once()
 		_, err := s.usecase.Update(ctx, s.update)
 		s.True(errors.Is(err, e))
@@ -451,23 +458,23 @@ func (s *UniqueDinosaurTestSuite) TestUpdate() {
 		s.mockDinoCommand.On(
 			update,
 			ctx,
-			s.update.UpdateDinosaur,
+			s.update.Dino(),
 		).
-			Return(&s.dinoResponse, nil).
+			Return(nil).
 			Once()
 		s.mockUniqueCommand.On(
 			update,
 			ctx,
-			s.update.UpdateUniqueDinosaur,
+			s.update.Unique(),
 		).
-			Return(&s.uniqueResponse, nil).
+			Return(nil).
 			Once()
 		s.mockVariantsCommand.On(
 			update,
 			ctx,
-			s.update.UpdateVariants,
+			s.update.Variants(),
 		).
-			Return(nil, e).
+			Return(e).
 			Once()
 		_, err := s.usecase.Update(ctx, s.update)
 		s.True(errors.Is(err, e))
@@ -476,7 +483,7 @@ func (s *UniqueDinosaurTestSuite) TestUpdate() {
 
 func (s *UniqueDinosaurTestSuite) TestDelete() {
 	id := model.UniqueDinosaurID(uniqueID)
-	s.mockUniqueQuery.On(find, ctx, id).Return(&s.unique, nil).Times(3)
+	s.mockUniqueQuery.On(find, ctx, id).Return(&s.response, nil).Times(3)
 	{
 		s.mockUniqueCommand.On("Delete", ctx, id).Return(nil).Once()
 		s.Nil(s.usecase.Delete(ctx, id))
