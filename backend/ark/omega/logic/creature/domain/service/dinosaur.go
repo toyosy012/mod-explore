@@ -7,7 +7,7 @@ import (
 )
 
 type DinosaurCommandRepository interface {
-	Insert(context.Context, CreateDinosaur) error
+	Insert(context.Context, CreateDinosaur) (model.DinosaurID, error)
 	Update(context.Context, UpdateDinosaur) error
 	Delete(context.Context, model.DinosaurID) error
 }

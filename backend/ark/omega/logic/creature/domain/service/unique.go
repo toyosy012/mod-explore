@@ -13,8 +13,8 @@ type UniqueQueryRepository interface {
 }
 
 type UniqueCommandRepository interface {
-	Insert(context.Context, CreateUniqueDinosaur) (*ResponseUnique, error)
-	Update(context.Context, UpdateUniqueDinosaur) (*ResponseUnique, error)
+	Insert(context.Context, CreateUniqueDinosaur) (model.UniqueDinosaurID, error)
+	Update(context.Context, UpdateUniqueDinosaur) error
 	Delete(context.Context, model.UniqueDinosaurID) error
 }
 
