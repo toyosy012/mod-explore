@@ -3,13 +3,16 @@ package service
 import (
 	"context"
 
+	"github.com/samber/lo"
+
 	"mods-explore/ark/omega/logic/creature/domain/model"
+	variantModel "mods-explore/ark/omega/logic/variant/domain/model"
 )
 
 // UniqueQueryRepository 集約内のテーブルをjoinしてレコードを取得する処理を定義
 type UniqueQueryRepository interface {
-	Select(context.Context, model.UniqueDinosaurID) (*model.UniqueDinosaur, error)
-	List(context.Context) (model.UniqueDinosaurs, error)
+	Select(context.Context, model.UniqueDinosaurID) (*ResponseCreature, error)
+	List(context.Context) (ResponseCreatures, error)
 }
 
 type UniqueCommandRepository interface {
@@ -215,3 +218,29 @@ func (u ResponseUnique) HealthMultiplier() model.UniqueMultiplier[model.Health] 
 func (u ResponseUnique) MeleeMultiplier() model.UniqueMultiplier[model.Melee] {
 	return u.damageMultiplier
 }
+
+type ResponseCreature struct {
+	ResponseDinosaur
+	ResponseVariants
+	ResponseUnique
+}
+
+func (c ResponseCreature) ToUniqueDinosaur() model.UniqueDinosaur {
+	vs := lo.Map(c.ResponseVariants.Values(), func(item model.DinosaurVariant, _ int) model.DinosaurVariant {
+		return model.NewDinosaurVariant(
+			variantModel.NewVariant(item.ID(), item.Group(), item.Name()),
+			model.VariantDescriptions{},
+		)
+	})
+	return model.NewUniqueDinosaur(
+		model.NewDinosaur(
+			c.ResponseDinosaur.ID(), c.ResponseDinosaur.Name(),
+			c.ResponseDinosaur.Health(), c.ResponseDinosaur.Melee(),
+		),
+		c.ResponseUnique.ID(), c.ResponseUnique.Name(),
+		c.ResponseUnique.HealthMultiplier(), c.ResponseUnique.MeleeMultiplier(),
+		c.ResponseVariants.id, vs,
+	)
+}
+
+type ResponseCreatures []ResponseCreature
