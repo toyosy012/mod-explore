@@ -53,13 +53,17 @@ func (u Unique) Find(ctx context.Context, id model.UniqueDinosaurID) (*model.Uni
 }
 
 func (u Unique) List(ctx context.Context) (model.UniqueDinosaurs, error) {
-	uniques, err := u.uniqueQuery.List(ctx)
+	resp, err := u.uniqueQuery.List(ctx)
 	if err != nil {
 		if errors.Is(err, service.IntervalServerError) {
 			return nil, failure.New(logic.IntervalServerError)
 		}
 		return nil, failure.Wrap(err)
 	}
+
+	uniques := lo.Map(resp, func(r service.ResponseCreature, _ int) model.UniqueDinosaur {
+		return r.ToUniqueDinosaur()
+	})
 	return uniques, nil
 }
 
