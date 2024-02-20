@@ -105,20 +105,66 @@ func NewCreateUniqueDinosaur(
 }
 
 type UpdateCreature struct {
-	UpdateDinosaur
-	UpdateUniqueDinosaur
-	UpdateVariants
+	dinoID           model.DinosaurID
+	dinoName         model.DinosaurName
+	baseHealth       model.Health
+	baseMelee        model.Melee
+	uniqueID         model.UniqueDinosaurID
+	uniqueName       model.UniqueName
+	healthMultiplier model.UniqueMultiplier[model.Health]
+	damageMultiplier model.UniqueMultiplier[model.Melee]
+	variantsID       model.UniqueVariantID
+	variants         model.UniqueVariant
 }
 
 func NewUpdateCreature(
-	base UpdateDinosaur,
-	unique UpdateUniqueDinosaur,
-	variants UpdateVariants,
+	dinoID model.DinosaurID,
+	dinoName model.DinosaurName,
+	baseHealth model.Health,
+	baseMelee model.Melee,
+	uniqueDinoID model.UniqueDinosaurID,
+	uniqueName model.UniqueName,
+	healthMultiplier model.UniqueMultiplier[model.Health],
+	damageMultiplier model.UniqueMultiplier[model.Melee],
+	variantsID model.UniqueVariantID,
+	variants model.UniqueVariant,
 ) UpdateCreature {
 	return UpdateCreature{
-		UpdateDinosaur:       base,
-		UpdateUniqueDinosaur: unique,
-		UpdateVariants:       variants,
+		dinoID:           dinoID,
+		dinoName:         dinoName,
+		baseHealth:       baseHealth,
+		baseMelee:        baseMelee,
+		uniqueID:         uniqueDinoID,
+		uniqueName:       uniqueName,
+		healthMultiplier: healthMultiplier,
+		damageMultiplier: damageMultiplier,
+		variantsID:       variantsID,
+		variants:         variants,
+	}
+}
+
+func (c UpdateCreature) Dino() UpdateDinosaur {
+	return UpdateDinosaur{
+		id:         c.dinoID,
+		name:       c.dinoName,
+		baseHealth: c.baseHealth,
+		baseMelee:  c.baseMelee,
+	}
+}
+
+func (c UpdateCreature) Unique() UpdateUniqueDinosaur {
+	return UpdateUniqueDinosaur{
+		uniqueDinoID:     c.uniqueID,
+		name:             c.uniqueName,
+		healthMultiplier: c.healthMultiplier,
+		damageMultiplier: c.damageMultiplier,
+	}
+}
+
+func (c UpdateCreature) Variants() UpdateVariants {
+	return UpdateVariants{
+		variantID: c.variantsID,
+		variants:  c.variants,
 	}
 }
 
@@ -142,8 +188,6 @@ func NewUpdateUniqueDinosaur(
 		damageMultiplier: damageMultiplier,
 	}
 }
-
-func (d UpdateUniqueDinosaur) ID() model.UniqueDinosaurID { return d.uniqueDinoID }
 
 type ResponseUnique struct {
 	id               model.UniqueDinosaurID
