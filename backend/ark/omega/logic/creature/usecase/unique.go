@@ -25,7 +25,7 @@ type Unique struct {
 	dinoCommand    service.DinosaurCommandRepository
 	uniqueQuery    service.UniqueQueryRepository
 	uniqueCommand  service.UniqueCommandRepository
-	variantCommand service.VariantsCommandRepository
+	variantCommand service.UniqueVariantsCommand
 }
 
 func NewUnique(injector *do.Injector) (*Unique, error) {
@@ -33,7 +33,7 @@ func NewUnique(injector *do.Injector) (*Unique, error) {
 		dinoCommand:    do.MustInvoke[service.DinosaurCommandRepository](injector),
 		uniqueQuery:    do.MustInvoke[service.UniqueQueryRepository](injector),
 		uniqueCommand:  do.MustInvoke[service.UniqueCommandRepository](injector),
-		variantCommand: do.MustInvoke[service.VariantsCommandRepository](injector),
+		variantCommand: do.MustInvoke[service.UniqueVariantsCommand](injector),
 	}, nil
 }
 

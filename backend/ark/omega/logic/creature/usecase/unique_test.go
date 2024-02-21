@@ -67,7 +67,7 @@ func (s *UniqueDinosaurTestSuite) SetupSuite() {
 		do.ProvideValue[service.UniqueCommandRepository](injector, mockUniqueCommand)
 		s.mockUniqueCommand = mockUniqueCommand
 		mockVariantsCommand := newMockVariantsCommand()
-		do.ProvideValue[service.VariantsCommandRepository](injector, mockVariantsCommand)
+		do.ProvideValue[service.UniqueVariantsCommand](injector, mockVariantsCommand)
 		s.mockVariantsCommand = mockVariantsCommand
 
 		usecase, err := NewUnique(injector)
