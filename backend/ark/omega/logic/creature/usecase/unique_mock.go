@@ -136,7 +136,7 @@ func (g *mockUniqueCommandRepo) Delete(ctx context.Context, id model.UniqueDinos
 }
 
 var _ logic.Transactioner = (*mockVariantsCommandRepo)(nil)
-var _ service.VariantsCommandRepository = (*mockVariantsCommandRepo)(nil)
+var _ service.UniqueVariantsCommand = (*mockVariantsCommandRepo)(nil)
 
 type mockVariantsCommandRepo struct {
 	mock.Mock

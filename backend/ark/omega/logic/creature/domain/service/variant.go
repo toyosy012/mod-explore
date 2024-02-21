@@ -9,21 +9,25 @@ import (
 	"mods-explore/ark/omega/logic/creature/domain/model"
 )
 
-type VariantsCommandRepository interface {
+type UniqueVariantsCommand interface {
 	Insert(context.Context, CreateVariants) (model.UniqueVariantID, error)
 	Update(context.Context, UpdateVariants) error
 	Delete(context.Context, model.UniqueVariantID) error
 }
 
 type CreateVariants struct {
-	variants model.UniqueVariant
+	uniqueDinosaurID model.UniqueDinosaurID
+	variants         model.UniqueVariant
 }
 
-func NewCreateVariants(variants model.UniqueVariant) CreateVariants {
+func NewCreateVariants(id model.UniqueDinosaurID, variants model.UniqueVariant) CreateVariants {
 	return CreateVariants{
-		variants: variants,
+		uniqueDinosaurID: id,
+		variants:         variants,
 	}
 }
+
+func (v CreateVariants) UniqueDinosaurID() model.UniqueDinosaurID { return v.uniqueDinosaurID }
 
 func (v CreateVariants) VariantIDs() []variantModel.VariantID {
 	return lo.Map(v.variants, func(variant model.DinosaurVariant, _ int) variantModel.VariantID {
@@ -32,20 +36,21 @@ func (v CreateVariants) VariantIDs() []variantModel.VariantID {
 }
 
 type UpdateVariants struct {
-	variantID model.UniqueVariantID
-	variants  model.UniqueVariant
+	uniqueDinosaurID model.UniqueDinosaurID
+	variants         model.UniqueVariant
 }
 
 func NewUpdateVariants(
-	variantID model.UniqueVariantID,
+	uniqueDinosaurID model.UniqueDinosaurID,
 	variants model.UniqueVariant,
 ) UpdateVariants {
 	return UpdateVariants{
-		variantID: variantID,
-		variants:  variants,
+		uniqueDinosaurID: uniqueDinosaurID,
+		variants:         variants,
 	}
 }
 
+func (v UpdateVariants) UniqueDinosaurID() model.UniqueDinosaurID { return v.uniqueDinosaurID }
 func (v UpdateVariants) VariantIDs() []variantModel.VariantID {
 	return lo.Map(v.variants, func(variant model.DinosaurVariant, _ int) variantModel.VariantID {
 		return variant.ID()
