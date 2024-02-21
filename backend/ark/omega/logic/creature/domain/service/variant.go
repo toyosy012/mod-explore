@@ -3,6 +3,9 @@ package service
 import (
 	"context"
 
+	"github.com/samber/lo"
+	variantModel "mods-explore/ark/omega/logic/variant/domain/model"
+
 	"mods-explore/ark/omega/logic/creature/domain/model"
 )
 
@@ -22,6 +25,12 @@ func NewCreateVariants(variants model.UniqueVariant) CreateVariants {
 	}
 }
 
+func (v CreateVariants) VariantIDs() []variantModel.VariantID {
+	return lo.Map(v.variants, func(variant model.DinosaurVariant, _ int) variantModel.VariantID {
+		return variant.ID()
+	})
+}
+
 type UpdateVariants struct {
 	variantID model.UniqueVariantID
 	variants  model.UniqueVariant
@@ -35,6 +44,12 @@ func NewUpdateVariants(
 		variantID: variantID,
 		variants:  variants,
 	}
+}
+
+func (v UpdateVariants) VariantIDs() []variantModel.VariantID {
+	return lo.Map(v.variants, func(variant model.DinosaurVariant, _ int) variantModel.VariantID {
+		return variant.ID()
+	})
 }
 
 type ResponseVariants struct {
