@@ -26,13 +26,16 @@ func NewDinosaurClient(injector *do.Injector) (service.DinosaurCommandRepository
 	}, nil
 }
 
-func (c DinosaurClient) Insert(ctx context.Context, create service.CreateDinosaur) error {
-	_, err := c.NamedStore(
+func (c DinosaurClient) Insert(ctx context.Context, create service.CreateDinosaur) (model.DinosaurID, error) {
+	id, err := c.NamedStore(
 		ctx,
-		`INSERT INTO dinosaurs (name, health, melee) VALUES (:name, :health, :melee);`,
+		`INSERT INTO dinosaurs (name, health, melee) VALUES (:name, :health, :melee) RETURNING id;`,
 		map[string]any{"name": create.Name(), "health": create.Health(), "melee": create.Melee()},
 	)
-	return err
+	if err != nil {
+		return 0, err
+	}
+	return model.DinosaurID(id), err
 }
 
 func (c DinosaurClient) Update(ctx context.Context, update service.UpdateDinosaur) error {
