@@ -7,4 +7,4 @@ PCゲームのModはデータの検索まで考慮して作られているもの
 
 - ARK - Omega
 
-<img src="https://github.com/toyosy012/mod-explore/modexplore.png" alt="modexplore" width="768" height="480">
+<img src="https://github.com/toyosy012/mod-explore/blob/main/modexplore.png" alt="modexplore" width="768" height="480">
