@@ -18,14 +18,14 @@ type UniqueCommandRepo struct {
 	Client[UniqueModel, int]
 }
 
-func (r UniqueCommandRepo) Insert(context.Context, service.CreateUniqueDinosaur) (model.UniqueDinosaurID, error) {
+func (r UniqueCommandRepo) Insert(ctx context.Context, create service.CreateUniqueDinosaur) (model.UniqueDinosaurID, error) {
 	return model.UniqueDinosaurID(0), nil
 }
 
-func (r UniqueCommandRepo) Update(context.Context, service.UpdateUniqueDinosaur) error {
+func (r UniqueCommandRepo) Update(ctx context.Context, update service.UpdateUniqueDinosaur) error {
 	return nil
 }
 
-func (r UniqueCommandRepo) Delete(context.Context, model.UniqueDinosaurID) error {
+func (r UniqueCommandRepo) Delete(ctx context.Context, id model.UniqueDinosaurID) error {
 	return nil
 }
