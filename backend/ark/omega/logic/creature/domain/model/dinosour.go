@@ -36,3 +36,8 @@ func NewDinosaur(id DinosaurID, name DinosaurName, health Health, Melee Melee) D
 		baseMelee:  Melee,
 	}
 }
+
+func (d Dinosaur) BaseID() DinosaurID     { return d.id }
+func (d Dinosaur) BaseName() DinosaurName { return d.name }
+func (d Dinosaur) Health() Health         { return d.baseHealth }
+func (d Dinosaur) Melee() Melee           { return d.baseMelee }
