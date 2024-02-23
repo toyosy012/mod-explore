@@ -41,7 +41,6 @@ func NewCreateCreature(
 	uniqueName model.UniqueName,
 	healthMultiplier model.UniqueMultiplier[model.Health],
 	damageMultiplier model.UniqueMultiplier[model.Melee],
-	uniqueID model.UniqueDinosaurID,
 	variants model.UniqueVariant,
 ) CreateCreature {
 	return CreateCreature{
@@ -51,7 +50,6 @@ func NewCreateCreature(
 		UniqueName:       uniqueName,
 		HealthMultiplier: healthMultiplier,
 		DamageMultiplier: damageMultiplier,
-		UniqueID:         uniqueID,
 		Variants:         variants,
 	}
 }
