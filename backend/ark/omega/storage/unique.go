@@ -54,5 +54,5 @@ func (r UniqueCommandRepo) Update(ctx context.Context, update service.UpdateUniq
 }
 
 func (r UniqueCommandRepo) Delete(ctx context.Context, id model.UniqueDinosaurID) error {
-	return nil
+	return r.NamedDelete(ctx, `DELETE FROM uniques WHERE id = :id;`, map[string]any{"id": id})
 }
