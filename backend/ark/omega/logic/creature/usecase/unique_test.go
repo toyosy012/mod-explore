@@ -127,7 +127,9 @@ func (s *UniqueDinosaurTestSuite) SetupSuite() {
 			}
 			s.unique = model.NewUniqueDinosaur(
 				model.NewDinosaur(creatureID, creatureName, h, m),
-				uniqueID, uniqueName, *healthMultiplier, *meleeMultiplier, variantsID, variants,
+				uniqueID, uniqueName,
+				*healthMultiplier, *meleeMultiplier,
+				variantsID, variants,
 			)
 		}
 	}
