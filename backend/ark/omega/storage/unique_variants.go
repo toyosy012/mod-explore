@@ -33,7 +33,8 @@ func NewUniqueVariantsClient(injector *do.Injector) (service.UniqueVariantsComma
 }
 
 func (c UniqueVariantsClient) Insert(ctx context.Context, create service.CreateVariants) (model.UniqueVariantID, error) {
-	records := lo.Map(create.VariantIDs(), func(id variantModel.VariantID, _ int) map[string]any {
+	ids := create.VariantIDs()
+	records := lo.Map(ids[:], func(id variantModel.VariantID, _ int) map[string]any {
 		return map[string]any{"variant_id": id, "unique_id": create.UniqueDinosaurID()}
 	})
 	id, err := c.NamedStore(
@@ -48,7 +49,8 @@ func (c UniqueVariantsClient) Insert(ctx context.Context, create service.CreateV
 }
 
 func (c UniqueVariantsClient) Update(ctx context.Context, update service.UpdateVariants) error {
-	records := lo.Map(update.VariantIDs(), func(id variantModel.VariantID, _ int) map[string]any {
+	ids := update.VariantIDs() // メソッドで戻ってきた配列のアドレスを直接sliceに変換できないので、一度アドレスを格納する変数に入れ直す
+	records := lo.Map(ids[:], func(id variantModel.VariantID, _ int) map[string]any {
 		return map[string]any{"variant_id": id, "unique_id": update.UniqueDinosaurID()}
 	})
 	_, err := c.NamedStore(
