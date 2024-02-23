@@ -170,8 +170,7 @@ func (c UpdateCreature) Unique() UpdateUniqueDinosaur {
 
 func (c UpdateCreature) Variants() UpdateVariants {
 	return UpdateVariants{
-		variantID: c.variantsID,
-		variants:  c.variants,
+		variants: c.variants,
 	}
 }
 

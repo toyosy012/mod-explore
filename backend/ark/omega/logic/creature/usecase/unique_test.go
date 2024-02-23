@@ -260,7 +260,7 @@ func (s *UniqueDinosaurTestSuite) TestInsert() {
 		s.mockUniqueCommand.On(
 			insert,
 			ctx,
-			s.create.UniqueDinosaur(creatureID, variantsID),
+			s.create.UniqueDinosaur(creatureID),
 		).
 			Return(model.UniqueDinosaurID(uniqueID), nil).
 			Once()
@@ -299,10 +299,10 @@ func (s *UniqueDinosaurTestSuite) TestInsert() {
 		).
 			Return(model.DinosaurID(creatureID), nil).
 			Once()
-		s.mockVariantsCommand.On(
+		s.mockUniqueCommand.On(
 			insert,
 			ctx,
-			s.create.UniqueVariants(),
+			s.create.UniqueDinosaur(creatureID),
 		).
 			Return(nil, e).
 			Once()
@@ -320,7 +320,7 @@ func (s *UniqueDinosaurTestSuite) TestInsert() {
 		s.mockUniqueCommand.On(
 			insert,
 			ctx,
-			s.create.UniqueDinosaur(creatureID, variantsID),
+			s.create.UniqueDinosaur(creatureID),
 		).
 			Return(model.UniqueDinosaurID(uniqueID), nil).
 			Once()
