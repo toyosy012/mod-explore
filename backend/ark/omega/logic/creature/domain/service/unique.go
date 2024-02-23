@@ -177,21 +177,32 @@ func (c UpdateCreature) Variants() UpdateVariants {
 
 type UpdateUniqueDinosaur struct {
 	uniqueDinoID     model.UniqueDinosaurID
+	dinosaurID       model.DinosaurID
 	name             model.UniqueName
 	healthMultiplier model.UniqueMultiplier[model.Health]
 	damageMultiplier model.UniqueMultiplier[model.Melee]
 }
 
-func (d UpdateUniqueDinosaur) ID() model.UniqueDinosaurID { return d.uniqueDinoID }
+func (d UpdateUniqueDinosaur) ID() model.UniqueDinosaurID   { return d.uniqueDinoID }
+func (d UpdateUniqueDinosaur) Name() model.UniqueName       { return d.name }
+func (d UpdateUniqueDinosaur) DinosaurID() model.DinosaurID { return d.dinosaurID }
+func (d UpdateUniqueDinosaur) HealthMultiplier() model.UniqueMultiplier[model.Health] {
+	return d.healthMultiplier
+}
+func (d UpdateUniqueDinosaur) DamageMultiplier() model.UniqueMultiplier[model.Melee] {
+	return d.damageMultiplier
+}
 
 func NewUpdateUniqueDinosaur(
 	uniqueDinoID model.UniqueDinosaurID,
+	DinosaurID model.DinosaurID,
 	name model.UniqueName,
 	healthMultiplier model.UniqueMultiplier[model.Health],
 	damageMultiplier model.UniqueMultiplier[model.Melee],
 ) UpdateUniqueDinosaur {
 	return UpdateUniqueDinosaur{
 		uniqueDinoID:     uniqueDinoID,
+		dinosaurID:       DinosaurID,
 		name:             name,
 		healthMultiplier: healthMultiplier,
 		damageMultiplier: damageMultiplier,

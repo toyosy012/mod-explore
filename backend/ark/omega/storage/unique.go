@@ -35,6 +35,21 @@ func (r UniqueCommandRepo) Insert(ctx context.Context, create service.CreateUniq
 }
 
 func (r UniqueCommandRepo) Update(ctx context.Context, update service.UpdateUniqueDinosaur) error {
+	_, err := r.NamedStore(
+		ctx,
+		`UPDATE uniques 
+			SET dinosaur_id = :dinosaur_id, name = :name, 
+			    health_multiplier = :health_multiplier, damage_multiplier = :damage_multiplier, updated_at = NOW() 
+			WHERE id = :id;`,
+		map[string]any{
+			"id": update.ID(), "dinosaur_id": update.DinosaurID(), "name": update.Name(),
+			"health_multiplier": update.HealthMultiplier(), "damage_multiplier": update.DamageMultiplier(),
+		},
+	)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
