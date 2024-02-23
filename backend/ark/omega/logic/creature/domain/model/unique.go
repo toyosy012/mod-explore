@@ -16,7 +16,7 @@ type UniqueDinosaur struct {
 	healthMultiplier UniqueMultiplier[Health]
 	damageMultiplier UniqueMultiplier[Melee]
 	variantsID       UniqueVariantID
-	variants         UniqueVariant
+	uniqueVariant    UniqueVariant
 }
 
 func NewUniqueDinosaur(
@@ -26,7 +26,7 @@ func NewUniqueDinosaur(
 	healthMultiplier UniqueMultiplier[Health],
 	damageMultiplier UniqueMultiplier[Melee],
 	variantsID UniqueVariantID,
-	variants UniqueVariant,
+	uniqueVariant UniqueVariant,
 ) UniqueDinosaur {
 	return UniqueDinosaur{
 		Dinosaur:         base,
@@ -35,9 +35,15 @@ func NewUniqueDinosaur(
 		healthMultiplier: healthMultiplier,
 		damageMultiplier: damageMultiplier,
 		variantsID:       variantsID,
-		variants:         variants,
+		uniqueVariant:    uniqueVariant,
 	}
 }
+
+func (d UniqueDinosaur) UniqueID() UniqueDinosaurID                 { return d.uniqueDinoID }
+func (d UniqueDinosaur) UniqueName() UniqueName                     { return d.uniqueName }
+func (d UniqueDinosaur) HealthMultiplier() UniqueMultiplier[Health] { return d.healthMultiplier }
+func (d UniqueDinosaur) DamageMultiplier() UniqueMultiplier[Melee]  { return d.damageMultiplier }
+func (d UniqueDinosaur) UniqueVariant() UniqueVariant               { return d.uniqueVariant }
 
 type UniqueDinosaurs []UniqueDinosaur
 
@@ -73,7 +79,7 @@ func (d UniqueDinosaur) Damage() UniqueMultipliedStatus[Melee] {
 	return d.damageMultiplier.multiple(d.baseMelee)
 }
 
-type UniqueVariant []DinosaurVariant
+type UniqueVariant [2]DinosaurVariant
 
 type statusMultiplier float32
 
