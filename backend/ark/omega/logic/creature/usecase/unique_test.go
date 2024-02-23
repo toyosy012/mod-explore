@@ -105,14 +105,14 @@ func (s *UniqueDinosaurTestSuite) SetupSuite() {
 		}
 		{
 			s.create = service.NewCreateCreature(
-				creatureName, h, m, uniqueName, *healthMultiplier, *meleeMultiplier, uniqueID, variants,
+				creatureName, h, m, uniqueName, *healthMultiplier, *meleeMultiplier, [2]variantModel.VariantID{cosmicID, natureID},
 			)
 		}
 		{
 			s.update = service.NewUpdateCreature(
 				creatureID, creatureName, health, melee,
 				uniqueID, uniqueName, *healthMultiplier, *meleeMultiplier,
-				variantsID, variants,
+				variantsID, [2]variantModel.VariantID{variantsID},
 			)
 		}
 		{
