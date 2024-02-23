@@ -72,14 +72,12 @@ func (c CreateCreature) UniqueVariants() CreateVariants {
 
 func (c CreateCreature) UniqueDinosaur(
 	dinoID model.DinosaurID,
-	uniqueVariantID model.UniqueVariantID,
 ) CreateUniqueDinosaur {
 	return CreateUniqueDinosaur{
 		name:             c.UniqueName,
 		healthMultiplier: c.HealthMultiplier,
 		damageMultiplier: c.DamageMultiplier,
 		dinosaurID:       dinoID,
-		uniqueVariantID:  uniqueVariantID,
 	}
 }
 
@@ -88,7 +86,6 @@ type CreateUniqueDinosaur struct {
 	healthMultiplier model.UniqueMultiplier[model.Health]
 	damageMultiplier model.UniqueMultiplier[model.Melee]
 	dinosaurID       model.DinosaurID
-	uniqueVariantID  model.UniqueVariantID
 }
 
 func NewCreateUniqueDinosaur(
@@ -96,15 +93,22 @@ func NewCreateUniqueDinosaur(
 	healthMultiplier model.UniqueMultiplier[model.Health],
 	damageMultiplier model.UniqueMultiplier[model.Melee],
 	dinosaurID model.DinosaurID,
-	uniqueVariantID model.UniqueVariantID,
 ) CreateUniqueDinosaur {
 	return CreateUniqueDinosaur{
 		name:             name,
 		healthMultiplier: healthMultiplier,
 		damageMultiplier: damageMultiplier,
 		dinosaurID:       dinosaurID,
-		uniqueVariantID:  uniqueVariantID,
 	}
+}
+
+func (d CreateUniqueDinosaur) Name() model.UniqueName       { return d.name }
+func (d CreateUniqueDinosaur) DinosaurID() model.DinosaurID { return d.dinosaurID }
+func (d CreateUniqueDinosaur) HealthMultiplier() model.UniqueMultiplier[model.Health] {
+	return d.healthMultiplier
+}
+func (d CreateUniqueDinosaur) DamageMultiplier() model.UniqueMultiplier[model.Melee] {
+	return d.damageMultiplier
 }
 
 type UpdateCreature struct {
@@ -173,21 +177,32 @@ func (c UpdateCreature) Variants() UpdateVariants {
 
 type UpdateUniqueDinosaur struct {
 	uniqueDinoID     model.UniqueDinosaurID
+	dinosaurID       model.DinosaurID
 	name             model.UniqueName
 	healthMultiplier model.UniqueMultiplier[model.Health]
 	damageMultiplier model.UniqueMultiplier[model.Melee]
 }
 
-func (d UpdateUniqueDinosaur) ID() model.UniqueDinosaurID { return d.uniqueDinoID }
+func (d UpdateUniqueDinosaur) ID() model.UniqueDinosaurID   { return d.uniqueDinoID }
+func (d UpdateUniqueDinosaur) Name() model.UniqueName       { return d.name }
+func (d UpdateUniqueDinosaur) DinosaurID() model.DinosaurID { return d.dinosaurID }
+func (d UpdateUniqueDinosaur) HealthMultiplier() model.UniqueMultiplier[model.Health] {
+	return d.healthMultiplier
+}
+func (d UpdateUniqueDinosaur) DamageMultiplier() model.UniqueMultiplier[model.Melee] {
+	return d.damageMultiplier
+}
 
 func NewUpdateUniqueDinosaur(
 	uniqueDinoID model.UniqueDinosaurID,
+	DinosaurID model.DinosaurID,
 	name model.UniqueName,
 	healthMultiplier model.UniqueMultiplier[model.Health],
 	damageMultiplier model.UniqueMultiplier[model.Melee],
 ) UpdateUniqueDinosaur {
 	return UpdateUniqueDinosaur{
 		uniqueDinoID:     uniqueDinoID,
+		dinosaurID:       DinosaurID,
 		name:             name,
 		healthMultiplier: healthMultiplier,
 		damageMultiplier: damageMultiplier,

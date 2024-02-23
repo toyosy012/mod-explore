@@ -76,19 +76,18 @@ func (u Unique) Create(ctx context.Context, create service.CreateCreature) (_ *m
 		); err != nil {
 			return nil, failure.Wrap(err)
 		}
-		var uniqueVariantID model.UniqueVariantID
-		if uniqueVariantID, err = u.variantCommand.Insert(
-			ctx,
-			create.UniqueVariants(),
-		); err != nil {
-			return nil, failure.Wrap(err)
-		}
 		var uniqueID model.UniqueDinosaurID
 		if uniqueID, err = u.uniqueCommand.Insert(
 			ctx,
 			service.NewCreateUniqueDinosaur(
-				create.UniqueName, create.HealthMultiplier, create.DamageMultiplier, dinoID, uniqueVariantID,
+				create.UniqueName, create.HealthMultiplier, create.DamageMultiplier, dinoID,
 			),
+		); err != nil {
+			return nil, failure.Wrap(err)
+		}
+		if _, err = u.variantCommand.Insert(
+			ctx,
+			create.UniqueVariants(),
 		); err != nil {
 			return nil, failure.Wrap(err)
 		}
