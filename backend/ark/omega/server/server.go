@@ -13,7 +13,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"mods-explore/ark/omega"
-	"mods-explore/ark/omega/logic/variant/usecase"
+	creatureUsecase "mods-explore/ark/omega/logic/creature/usecase"
+	variantUsecase "mods-explore/ark/omega/logic/variant/usecase"
 	"mods-explore/ark/omega/server/handlers"
 	"mods-explore/ark/omega/storage"
 )
@@ -73,6 +74,15 @@ func newServer(injector *do.Injector) (*echo.Echo, error) {
 		variantGroupsV1.PUT("/:id", handler.Update)
 		variantGroupsV1.DELETE("/:id", handler.Delete)
 	}
+	{
+		uniqueQueryGroupV1 := s.Group(
+			"/api/v1/uniques",
+			handlers.Transctioner[storage.UniqueQueryModel, int](injector),
+		)
+		handler := do.MustInvoke[handlers.UniqueHandler](injector)
+		uniqueQueryGroupV1.GET("/:id", handler.ReadUnique)
+		uniqueQueryGroupV1.GET("", handler.ListUniques)
+	}
 
 	return s, nil
 }
@@ -102,13 +112,24 @@ func Wired() (*do.Injector, error) {
 
 	do.Provide(injector, storage.NewSQLxClient[storage.VariantModel, int])
 	do.Provide(injector, storage.NewVariantClient)
-	do.Provide(injector, usecase.NewVariant)
+	do.Provide(injector, variantUsecase.NewVariant)
 	do.Provide(injector, handlers.NewVariant)
 
 	do.Provide(injector, storage.NewSQLxClient[storage.VariantGroupModel, int])
 	do.Provide(injector, storage.NewVariantGroupClient)
-	do.Provide(injector, usecase.NewVariantGroup)
+	do.Provide(injector, variantUsecase.NewVariantGroup)
 	do.Provide(injector, handlers.NewVariantGroup)
+
+	do.Provide(injector, storage.NewSQLxClient[storage.UniqueQueryModel, int])
+	do.Provide(injector, storage.NewUniqueQueryRepo)
+	do.Provide(injector, storage.NewSQLxClient[storage.UniqueModel, int])
+	do.Provide(injector, storage.NewUniqueCommandRepo)
+	do.Provide(injector, storage.NewSQLxClient[storage.UniqueVariantsModel, int])
+	do.Provide(injector, storage.NewUniqueVariantsClient)
+	do.Provide(injector, storage.NewSQLxClient[storage.DinosaurModel, int])
+	do.Provide(injector, storage.NewDinosaurClient)
+	do.Provide(injector, creatureUsecase.NewUnique)
+	do.Provide(injector, handlers.NewUnique)
 
 	return injector, nil
 }

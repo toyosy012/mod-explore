@@ -28,7 +28,7 @@ type Unique struct {
 	variantCommand service.UniqueVariantsCommand
 }
 
-func NewUnique(injector *do.Injector) (*Unique, error) {
+func NewUnique(injector *do.Injector) (UniqueUsecase, error) {
 	return &Unique{
 		dinoCommand:    do.MustInvoke[service.DinosaurCommandRepository](injector),
 		uniqueQuery:    do.MustInvoke[service.UniqueQueryRepository](injector),
