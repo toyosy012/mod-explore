@@ -118,7 +118,7 @@ func (s *UniqueDinosaurTestSuite) SetupSuite() {
 		{
 			s.dinoResponse = service.NewResponseDinosaur(creatureID, creatureName, h, m)
 			s.uniqueResponse = service.NewResponseUnique(uniqueID, uniqueName, *healthMultiplier, *meleeMultiplier)
-			s.variantsResponse = service.NewResponseVariants(variantsID, variants)
+			s.variantsResponse = service.NewResponseVariants(variants)
 
 			s.response = service.ResponseCreature{
 				ResponseDinosaur: s.dinoResponse,
