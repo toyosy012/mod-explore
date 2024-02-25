@@ -129,7 +129,7 @@ func (s *UniqueDinosaurTestSuite) SetupSuite() {
 				model.NewDinosaur(creatureID, creatureName, h, m),
 				uniqueID, uniqueName,
 				*healthMultiplier, *meleeMultiplier,
-				variantsID, variants,
+				variants,
 			)
 		}
 	}

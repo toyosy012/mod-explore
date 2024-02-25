@@ -237,7 +237,7 @@ func (c ResponseCreature) ToUniqueDinosaur() model.UniqueDinosaur {
 		),
 		c.ResponseUnique.ID(), c.ResponseUnique.Name(),
 		c.ResponseUnique.HealthMultiplier(), c.ResponseUnique.MeleeMultiplier(),
-		c.ResponseVariants.ID(), model.UniqueVariant(vs),
+		model.UniqueVariant(vs),
 	)
 }
 
