@@ -36,16 +36,13 @@ func (v UpdateVariants) VariantIDs() [2]variantModel.VariantID {
 }
 
 type ResponseVariants struct {
-	id       model.UniqueVariantID
 	variants [2]model.DinosaurVariant
 }
 
 func NewResponseVariants(
-	variantID model.UniqueVariantID,
 	variants [2]model.DinosaurVariant,
 ) ResponseVariants {
-	return ResponseVariants{id: variantID, variants: variants}
+	return ResponseVariants{variants: variants}
 }
 
-func (v ResponseVariants) ID() model.UniqueVariantID        { return v.id }
 func (v ResponseVariants) Values() [2]model.DinosaurVariant { return v.variants }
