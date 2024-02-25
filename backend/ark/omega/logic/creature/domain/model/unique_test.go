@@ -98,7 +98,7 @@ func (s *UniqueDinosaurTestSuite) TestMultiplierHealth() {
 	uniqueDino := NewUniqueDinosaur(
 		s.baseDino, UniqueDinosaurID(1), s.defaultName,
 		s.defaultHealthMultiplier, s.defaultDamageMultiplier,
-		s.defaultVariantsID, s.variants,
+		s.variants,
 	)
 
 	uniqueHealth := uniqueDino.Health()
