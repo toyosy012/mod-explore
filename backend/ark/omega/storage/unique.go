@@ -162,7 +162,13 @@ type UniqueModel struct {
 }
 
 type UniqueCommandRepo struct {
-	Client[UniqueModel, int]
+	*Client[UniqueModel, int]
+}
+
+func NewUniqueCommandRepo(injector *do.Injector) (service.UniqueCommandRepository, error) {
+	return UniqueCommandRepo{
+		do.MustInvoke[*Client[UniqueModel, int]](injector),
+	}, nil
 }
 
 func (r UniqueCommandRepo) Insert(ctx context.Context, create service.CreateUniqueDinosaur) (model.UniqueDinosaurID, error) {
