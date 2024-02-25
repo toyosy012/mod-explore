@@ -15,7 +15,6 @@ type UniqueDinosaur struct {
 	uniqueName       UniqueName
 	healthMultiplier UniqueMultiplier[Health]
 	damageMultiplier UniqueMultiplier[Melee]
-	variantsID       UniqueVariantID
 	uniqueVariant    UniqueVariant
 }
 
@@ -25,7 +24,6 @@ func NewUniqueDinosaur(
 	name UniqueName,
 	healthMultiplier UniqueMultiplier[Health],
 	damageMultiplier UniqueMultiplier[Melee],
-	variantsID UniqueVariantID,
 	uniqueVariant UniqueVariant,
 ) UniqueDinosaur {
 	return UniqueDinosaur{
@@ -34,7 +32,6 @@ func NewUniqueDinosaur(
 		uniqueName:       name,
 		healthMultiplier: healthMultiplier,
 		damageMultiplier: damageMultiplier,
-		variantsID:       variantsID,
 		uniqueVariant:    uniqueVariant,
 	}
 }
@@ -55,9 +52,9 @@ type DinosaurStatus interface {
 	Health | Melee
 }
 
-type UniqueMultiplier[T DinosaurStatus] struct{ value statusMultiplier }
+type UniqueMultiplier[T DinosaurStatus] struct{ value StatusMultiplier }
 
-func NewUniqueMultiplier[T DinosaurStatus](v statusMultiplier) (*UniqueMultiplier[T], error) {
+func NewUniqueMultiplier[T DinosaurStatus](v StatusMultiplier) (*UniqueMultiplier[T], error) {
 	if errUniqueMinMultiplier >= v.ToFloat32() {
 		return nil, errors.New("ユニーク生物のステータス倍率は0より大きくしてください")
 	}
@@ -81,6 +78,6 @@ func (d UniqueDinosaur) Damage() UniqueMultipliedStatus[Melee] {
 
 type UniqueVariant [2]DinosaurVariant
 
-type statusMultiplier float32
+type StatusMultiplier float32
 
-func (m statusMultiplier) ToFloat32() float32 { return float32(m) }
+func (m StatusMultiplier) ToFloat32() float32 { return float32(m) }
