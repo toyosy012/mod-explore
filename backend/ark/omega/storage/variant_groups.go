@@ -16,18 +16,19 @@ type VariantGroupModel struct {
 }
 
 type VariantGroupClient struct {
-	*Client[VariantGroupModel, int]
+	*Client
 }
 
 func NewVariantGroupClient(injector *do.Injector) (service.VariantGroupRepository, error) {
 	return VariantGroupClient{
-		do.MustInvoke[*Client[VariantGroupModel, int]](injector),
+		do.MustInvoke[*Client](injector),
 	}, nil
 }
 
 func (v VariantGroupClient) Select(ctx context.Context, id model.VariantGroupID) (*model.VariantGroup, error) {
-	row, err := v.NamedGet(
+	row, err := NamedGet[VariantGroupModel](
 		ctx,
+		v.Client,
 		`SELECT id, name FROM groups WHERE id = :id;`,
 		map[string]any{"id": id},
 	)
@@ -43,8 +44,9 @@ func (v VariantGroupClient) Select(ctx context.Context, id model.VariantGroupID)
 }
 
 func (v VariantGroupClient) List(ctx context.Context) (model.VariantGroups, error) {
-	rows, err := v.NamedSelect(
+	rows, err := NamedSelect[VariantGroupModel](
 		ctx,
+		v.Client,
 		`SELECT id, name FROM groups;`,
 	)
 	if err != nil {
@@ -66,8 +68,9 @@ func (v VariantGroupClient) List(ctx context.Context) (model.VariantGroups, erro
 }
 
 func (v VariantGroupClient) Insert(ctx context.Context, create service.CreateVariantGroup) (*model.VariantGroup, error) {
-	id, err := v.NamedStore(
+	id, err := NamedStore[int](
 		ctx,
+		v.Client,
 		`INSERT INTO groups (name) VALUES (:name) RETURNING id;`,
 		map[string]any{"name": create.Name()},
 	)
@@ -84,8 +87,9 @@ func (v VariantGroupClient) Insert(ctx context.Context, create service.CreateVar
 }
 
 func (v VariantGroupClient) Update(ctx context.Context, update service.UpdateVariantGroup) (*model.VariantGroup, error) {
-	_, err := v.NamedStore(
+	_, err := NamedStore[int](
 		ctx,
+		v.Client,
 		`UPDATE groups SET name = :name, updated_at = NOW() WHERE id = :id;`,
 		map[string]any{"id": update.ID(), "name": update.Name()},
 	)
@@ -101,5 +105,5 @@ func (v VariantGroupClient) Update(ctx context.Context, update service.UpdateVar
 	return result, nil
 }
 func (v VariantGroupClient) Delete(ctx context.Context, id model.VariantGroupID) error {
-	return v.NamedDelete(ctx, `DELETE FROM groups WHERE id = :id;`, map[string]any{"id": id})
+	return NamedDelete(ctx, v.Client, `DELETE FROM groups WHERE id = :id;`, map[string]any{"id": id})
 }

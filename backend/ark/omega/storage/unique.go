@@ -86,18 +86,19 @@ func (m UniqueQueryModel) ToResponseCreature() (*service.ResponseCreature, error
 }
 
 type UniqueQueryRepo struct {
-	*Client[UniqueQueryModel, int]
+	*Client
 }
 
 func NewUniqueQueryRepo(injector *do.Injector) (service.UniqueQueryRepository, error) {
 	return &UniqueQueryRepo{
-		do.MustInvoke[*Client[UniqueQueryModel, int]](injector),
+		do.MustInvoke[*Client](injector),
 	}, nil
 }
 
 func (r UniqueQueryRepo) Select(ctx context.Context, id model.UniqueDinosaurID) (*service.ResponseCreature, error) {
-	row, err := r.NamedGet(
+	row, err := NamedGet[UniqueQueryModel](
 		ctx,
+		r.Client,
 		`SELECT
     				u.id as unique_id, u.name as unique_name,
     				u.health_multiplier, u.damage_multiplier,
@@ -124,14 +125,15 @@ func (r UniqueQueryRepo) Select(ctx context.Context, id model.UniqueDinosaurID) 
 }
 
 func (r UniqueQueryRepo) List(ctx context.Context) (service.ResponseCreatures, error) {
-	rows, err := r.NamedSelect(
+	rows, err := NamedSelect[UniqueQueryModel](
 		ctx,
+		r.Client,
 		`SELECT
     				u.id as unique_id, u.name as unique_name,
     				u.health_multiplier, u.damage_multiplier,
     				d.id as base_id, d.name as base_name,
     				d.health as base_health, d.melee as base_melee,
---     				array_agg(ROW(v.id, v.name, g.name)) as unique_variants
+    				array_agg(ROW(v.id, v.name, g.name)) as unique_variants
 				FROM uniques as u 
 				    JOIN dinosaurs as d ON u.dinosaur_id = d.id 
 				    JOIN unique_variants as uv ON u.id = uv.unique_id 
@@ -162,18 +164,19 @@ type UniqueModel struct {
 }
 
 type UniqueCommandRepo struct {
-	*Client[UniqueModel, int]
+	*Client
 }
 
 func NewUniqueCommandRepo(injector *do.Injector) (service.UniqueCommandRepository, error) {
 	return UniqueCommandRepo{
-		do.MustInvoke[*Client[UniqueModel, int]](injector),
+		do.MustInvoke[*Client](injector),
 	}, nil
 }
 
 func (r UniqueCommandRepo) Insert(ctx context.Context, create service.CreateUniqueDinosaur) (model.UniqueDinosaurID, error) {
-	id, err := r.NamedStore(
+	id, err := NamedStore[int](
 		ctx,
+		r.Client,
 		`INSERT INTO uniques (dinosaur_id, name, health_multiplier, damage_multiplier)
 			VALUES (:dinosaur_id, :name, :health_multiplier, :damage_multiplier)
 			RETURNING id;`,
@@ -188,8 +191,9 @@ func (r UniqueCommandRepo) Insert(ctx context.Context, create service.CreateUniq
 }
 
 func (r UniqueCommandRepo) Update(ctx context.Context, update service.UpdateUniqueDinosaur) error {
-	_, err := r.NamedStore(
+	_, err := NamedStore[int](
 		ctx,
+		r.Client,
 		`UPDATE uniques 
 			SET dinosaur_id = :dinosaur_id, name = :name, 
 			    health_multiplier = :health_multiplier, damage_multiplier = :damage_multiplier, updated_at = NOW() 
@@ -207,5 +211,5 @@ func (r UniqueCommandRepo) Update(ctx context.Context, update service.UpdateUniq
 }
 
 func (r UniqueCommandRepo) Delete(ctx context.Context, id model.UniqueDinosaurID) error {
-	return r.NamedDelete(ctx, `DELETE FROM uniques WHERE id = :id;`, map[string]any{"id": id})
+	return NamedDelete(ctx, r.Client, `DELETE FROM uniques WHERE id = :id;`, map[string]any{"id": id})
 }
