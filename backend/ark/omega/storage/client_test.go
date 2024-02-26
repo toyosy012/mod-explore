@@ -25,7 +25,7 @@ type testModel struct {
 type TestClientSuite struct {
 	suite.Suite
 
-	cli *Client[testModel, int]
+	cli *Client
 }
 
 func TestTestClientSuite(t *testing.T) {

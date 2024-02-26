@@ -14,19 +14,19 @@ import (
 
 // Client sqlxのインスタンスは使いまわしたいのでテーブル毎にクライアントモジュールを生成できるようにする
 // TODO Tをanyにせず、IDの型パラメータを指定しなくてもいいようにしたい。もしくはIDをテーブルのidの型に強制的に一致するようにしたい。
-type Client[T any, ID any] struct {
+type Client struct {
 	*sqlx.DB
 	logger *slog.Logger
 }
 
-func NewSQLxClient[T any, ID any](injector *do.Injector) (*Client[T, ID], error) {
-	return &Client[T, ID]{
+func NewSQLxClient(injector *do.Injector) (*Client, error) {
+	return &Client{
 		DB:     do.MustInvoke[*sqlx.DB](injector),
 		logger: do.MustInvoke[*slog.Logger](injector),
 	}, nil
 }
 
-func (c *Client[T, ID]) NamedGet(ctx context.Context, query string, args ...any) (*T, error) {
+func NamedGet[T any](ctx context.Context, c *Client, query string, args ...any) (*T, error) {
 	query, args, err := c.BindNamed(query, args)
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (c *Client[T, ID]) NamedGet(ctx context.Context, query string, args ...any)
 	return &row, nil
 }
 
-func (c *Client[T, ID]) NamedSelect(ctx context.Context, query string) ([]T, error) {
+func NamedSelect[T any](ctx context.Context, c *Client, query string) ([]T, error) {
 	var rows []T
 	if err := c.SelectContext(ctx, &rows, query); err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func (c *Client[T, ID]) NamedSelect(ctx context.Context, query string) ([]T, err
 	return rows, nil
 }
 
-func (c *Client[T, ID]) NamedStore(ctx context.Context, query string, arg any) (id ID, err error) {
+func NamedStore[ID any](ctx context.Context, c *Client, query string, arg any) (id ID, err error) {
 	stmt, err := c.PrepareNamedContext(ctx, query)
 	if err != nil {
 		return id, err
@@ -65,7 +65,7 @@ func (c *Client[T, ID]) NamedStore(ctx context.Context, query string, arg any) (
 	return id, nil
 }
 
-func (c *Client[T, ID]) NamedDelete(ctx context.Context, query string, arg any) error {
+func NamedDelete(ctx context.Context, c *Client, query string, arg any) error {
 	_, err := c.NamedExecContext(
 		ctx,
 		query,
