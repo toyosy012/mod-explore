@@ -36,15 +36,15 @@ type uniqueQueryParams struct {
 }
 
 type UniqueValue struct {
-	UniqueID         creatureModel.UniqueDinosaurID                       `json:"id" validate:"required"`
-	BaseID           creatureModel.DinosaurID                             `json:"base_id" validate:"required"`
-	BaseName         creatureModel.DinosaurName                           `json:"base_name" validate:"required"`
-	BaseHealth       creatureModel.Health                                 `json:"base_health" validate:"required"`
-	BaseMelee        creatureModel.Melee                                  `json:"base_melee" validate:"required"`
-	UniqueName       creatureModel.UniqueName                             `json:"unique_name" validate:"required"`
-	HealthMultiplier creatureModel.UniqueMultiplier[creatureModel.Health] `json:"health_multiplier" validate:"required"`
-	DamageMultiplier creatureModel.UniqueMultiplier[creatureModel.Melee]  `json:"damage_multiplier" validate:"required"`
-	UniqueVariant    creatureModel.UniqueVariant                          `json:"unique_variant" validate:"required"`
+	UniqueID         creatureModel.UniqueDinosaurID `json:"id" validate:"required"`
+	BaseID           creatureModel.DinosaurID       `json:"base_id" validate:"required"`
+	BaseName         creatureModel.DinosaurName     `json:"base_name" validate:"required"`
+	BaseHealth       creatureModel.Health           `json:"base_health" validate:"required"`
+	BaseMelee        creatureModel.Melee            `json:"base_melee" validate:"required"`
+	UniqueName       creatureModel.UniqueName       `json:"unique_name" validate:"required"`
+	HealthMultiplier float32                        `json:"health_multiplier" validate:"required"`
+	DamageMultiplier float32                        `json:"damage_multiplier" validate:"required"`
+	UniqueVariant    creatureModel.UniqueVariant    `json:"unique_variant" validate:"required"`
 }
 
 func NewUniqueValue(unique creatureModel.UniqueDinosaur) UniqueValue {
@@ -55,8 +55,8 @@ func NewUniqueValue(unique creatureModel.UniqueDinosaur) UniqueValue {
 		unique.Dinosaur.Health(),
 		unique.Dinosaur.Melee(),
 		unique.UniqueName(),
-		unique.HealthMultiplier(),
-		unique.DamageMultiplier(),
+		unique.HealthMultiplier().Value(),
+		unique.DamageMultiplier().Value(),
 		unique.UniqueVariant(),
 	}
 }
