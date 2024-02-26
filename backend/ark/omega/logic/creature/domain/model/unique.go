@@ -63,6 +63,8 @@ func NewUniqueMultiplier[T DinosaurStatus](v StatusMultiplier) (*UniqueMultiplie
 
 type UniqueMultipliedStatus[T DinosaurStatus] float32
 
+func (u UniqueMultiplier[T]) Value() float32 { return u.value.ToFloat32() }
+
 // multiple UniqueMultiplierに与えた型引数と同じ型のbaseを与えないとエラーになるようにする
 func (u UniqueMultiplier[T]) multiple(base T) UniqueMultipliedStatus[T] {
 	return UniqueMultipliedStatus[T](float32(base) * u.value.ToFloat32())
