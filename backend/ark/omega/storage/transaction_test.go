@@ -12,15 +12,10 @@ import (
 	"mods-explore/ark/omega/logic/variant/domain/service"
 )
 
-type test struct {
-	ID   int    `db:"id"`
-	Name string `db:"name"`
-}
-
 type testTransactionSuite struct {
 	suite.Suite
 
-	cli  Client[test, int]
+	cli  Client
 	mock sqlxmock.Sqlmock
 }
 
@@ -34,7 +29,7 @@ func (s *testTransactionSuite) SetupSuite() {
 		s.T().Fatal(err)
 	}
 
-	s.cli = Client[test, int]{db, slog.New(slog.NewJSONHandler(os.Stdout, nil))}
+	s.cli = Client{db, slog.New(slog.NewJSONHandler(os.Stdout, nil))}
 	s.mock = mock
 }
 
