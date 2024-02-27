@@ -12,15 +12,15 @@ import (
 )
 
 type UniqueQueryModel struct {
-	UniqueID         int              `db:"unique_id"`
-	UniqueName       string           `db:"unique_name"`
-	HealthMultiplier float32          `db:"health_multiplier"`
-	DamageMultiplier float32          `db:"damage_multiplier"`
-	BaseID           int              `db:"base_id"`
-	BaseName         string           `db:"base_name"`
-	BaseHealth       uint             `db:"base_health"`
-	BaseMelee        int              `db:"base_melee"`
-	UniqueVariants   [2]uniqueVariant `db:"unique_variants"`
+	UniqueID         int     `db:"unique_id"`
+	UniqueName       string  `db:"unique_name"`
+	HealthMultiplier float32 `db:"health_multiplier"`
+	DamageMultiplier float32 `db:"damage_multiplier"`
+	BaseID           int     `db:"base_id"`
+	BaseName         string  `db:"base_name"`
+	BaseHealth       uint    `db:"base_health"`
+	BaseMelee        int     `db:"base_melee"`
+	uniqueVariant
 }
 
 type uniqueVariant struct {
@@ -29,9 +29,9 @@ type uniqueVariant struct {
 	GroupName   string `db:"group_name"`
 }
 
-func (m UniqueQueryModel) ToUniqueVariant() [2]model.DinosaurVariant {
-	variants := m.UniqueVariants
-	v := lo.Map(variants[:], func(v uniqueVariant, _ int) model.DinosaurVariant {
+func (m UniqueQueryModels) responseVariants() service.ResponseVariants {
+	ms := m[:]
+	variants := lo.Map(ms, func(v UniqueQueryModel, _ int) model.DinosaurVariant {
 		return model.NewDinosaurVariant(
 			variant.NewVariant(
 				variant.VariantID(v.VariantID),
@@ -41,44 +41,35 @@ func (m UniqueQueryModel) ToUniqueVariant() [2]model.DinosaurVariant {
 		)
 	})
 
-	return ([2]model.DinosaurVariant)(v)
+	return service.NewResponseVariants(([2]model.DinosaurVariant)(variants))
 }
 
-func (m UniqueQueryModel) ToResponseCreature() (*service.ResponseCreature, error) {
-	health, err := model.NewHealth(m.BaseHealth)
+func (m UniqueQueryModels) toResponseCreature() (*service.ResponseCreature, error) {
+	u := m[0]
+	health, err := model.NewHealth(u.BaseHealth)
 	if err != nil {
 		return nil, err
 	}
-	healthMultiplier, err := model.NewUniqueMultiplier[model.Health](model.StatusMultiplier(m.HealthMultiplier))
+	healthMultiplier, err := model.NewUniqueMultiplier[model.Health](model.StatusMultiplier(u.HealthMultiplier))
 	if err != nil {
 		return nil, err
 	}
-	damageMultiplier, err := model.NewUniqueMultiplier[model.Melee](model.StatusMultiplier(m.DamageMultiplier))
+	damageMultiplier, err := model.NewUniqueMultiplier[model.Melee](model.StatusMultiplier(u.DamageMultiplier))
 	if err != nil {
 		return nil, err
 	}
-	variants := m.UniqueVariants
-	v := lo.Map(variants[:], func(v uniqueVariant, _ int) model.DinosaurVariant {
-		return model.NewDinosaurVariant(
-			variant.NewVariant(
-				variant.VariantID(v.VariantID),
-				variant.VariantGroupName(v.GroupName),
-				variant.Name(v.VariantName)),
-			model.VariantDescriptions{},
-		)
-	})
 
 	return &service.ResponseCreature{
 		ResponseDinosaur: service.NewResponseDinosaur(
-			model.DinosaurID(m.BaseID),
-			model.DinosaurName(m.BaseName),
+			model.DinosaurID(u.BaseID),
+			model.DinosaurName(u.BaseName),
 			health,
-			model.Melee(m.BaseMelee),
+			model.Melee(u.BaseMelee),
 		),
-		ResponseVariants: service.NewResponseVariants(([2]model.DinosaurVariant)(v)),
+		ResponseVariants: m.responseVariants(),
 		ResponseUnique: service.NewResponseUnique(
-			model.UniqueDinosaurID(m.UniqueID),
-			model.UniqueName(m.UniqueName),
+			model.UniqueDinosaurID(u.UniqueID),
+			model.UniqueName(u.UniqueName),
 			*healthMultiplier,
 			*damageMultiplier,
 		),
@@ -96,7 +87,7 @@ func NewUniqueQueryRepo(injector *do.Injector) (service.UniqueQueryRepository, e
 }
 
 func (r UniqueQueryRepo) Select(ctx context.Context, id model.UniqueDinosaurID) (*service.ResponseCreature, error) {
-	row, err := NamedGet[UniqueQueryModel](
+	rows, err := NamedSelect[UniqueQueryModel](
 		ctx,
 		r.Client,
 		`SELECT
@@ -104,24 +95,25 @@ func (r UniqueQueryRepo) Select(ctx context.Context, id model.UniqueDinosaurID) 
     				u.health_multiplier, u.damage_multiplier,
     				d.id as base_id, d.name as base_name,
     				d.health as base_health, d.melee as base_melee,
-    				array_agg(ROW(v.id, v.name, g.name)) as unique_variants
+    				v.id as variant_id, v.name as variant_name, g.name as group_name
 				FROM uniques as u 
 				    JOIN dinosaurs as d ON u.dinosaur_id = d.id 
 				    JOIN unique_variants as uv ON u.id = uv.unique_id 
 				    JOIN variants as v ON uv.variant_id = v.id 
 				    JOIN groups as g ON g.id = v.group_id 
-				WHERE u.id = :id GROUP BY u.id, d.id;`,
+				WHERE u.id = :id GROUP BY u.id, d.id, v.id, g.id;`,
 		map[string]any{"id": id},
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := row.ToResponseCreature()
+	unique, err := (UniqueQueryModels)(rows).toResponseCreature()
 	if err != nil {
 		return nil, err
 	}
-	return response, nil
+
+	return unique, nil
 }
 
 func (r UniqueQueryRepo) List(ctx context.Context) (service.ResponseCreatures, error) {
