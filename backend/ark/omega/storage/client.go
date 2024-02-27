@@ -42,9 +42,23 @@ func NamedGet[T any](ctx context.Context, c *Client, query string, args ...any) 
 	return &row, nil
 }
 
-func NamedSelect[T any](ctx context.Context, c *Client, query string) ([]T, error) {
+func Select[T any](ctx context.Context, c *Client, query string) ([]T, error) {
 	var rows []T
 	if err := c.SelectContext(ctx, &rows, query); err != nil {
+		return nil, err
+	}
+
+	return rows, nil
+}
+
+func NamedSelect[T any](ctx context.Context, c sqlx.ExtContext, query string, arg ...any) ([]T, error) {
+	query, params, err := c.BindNamed(query, arg)
+	if err != nil {
+		return nil, err
+	}
+
+	var rows []T
+	if err = sqlx.SelectContext(ctx, c, &rows, query, params...); err != nil {
 		return nil, err
 	}
 
