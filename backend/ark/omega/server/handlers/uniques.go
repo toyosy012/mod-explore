@@ -80,7 +80,7 @@ type UniqueValues []UniqueValue
 
 func NewUniqueValues(uniques creatureModel.UniqueDinosaurs) UniqueValues {
 	return lo.Map(uniques, func(u creatureModel.UniqueDinosaur, _ int) UniqueValue {
-		return UniqueValue{}
+		return NewUniqueValue(u)
 	})
 }
 
