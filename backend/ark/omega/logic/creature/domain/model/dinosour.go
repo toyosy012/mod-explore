@@ -6,6 +6,8 @@ import (
 
 type Health uint
 
+func (h Health) Value() uint { return uint(h) }
+
 func NewHealth(value uint) (Health, error) {
 	if 0 == value {
 		return 0, errors.New("体力0は許容されない不正な値です")
@@ -15,11 +17,18 @@ func NewHealth(value uint) (Health, error) {
 
 type Melee uint
 
+func (m Melee) Value() uint { return uint(m) }
+
 // NewMelee 攻撃不可な生物も存在するのでその場合は0を指定
 func NewMelee(value uint) Melee { return Melee(value) }
 
 type DinosaurID int
+
+func (i DinosaurID) Value() int { return int(i) }
+
 type DinosaurName string
+
+func (n DinosaurName) Value() string { return string(n) }
 
 type Dinosaur struct {
 	id         DinosaurID

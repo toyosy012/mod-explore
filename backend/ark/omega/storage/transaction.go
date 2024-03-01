@@ -11,7 +11,7 @@ import (
 	"mods-explore/ark/omega/logic/variant/domain/service"
 )
 
-func (c *Client[T, ID]) WithTransaction(ctx context.Context, fn func(context.Context) (any, error)) (_ any, err error) {
+func (c *Client) WithTransaction(ctx context.Context, fn func(context.Context) (any, error)) (_ any, err error) {
 	timeout, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 

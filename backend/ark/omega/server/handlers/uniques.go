@@ -36,28 +36,43 @@ type uniqueQueryParams struct {
 }
 
 type UniqueValue struct {
-	UniqueID         creatureModel.UniqueDinosaurID `json:"id" validate:"required"`
-	BaseID           creatureModel.DinosaurID       `json:"base_id" validate:"required"`
-	BaseName         creatureModel.DinosaurName     `json:"base_name" validate:"required"`
-	BaseHealth       creatureModel.Health           `json:"base_health" validate:"required"`
-	BaseMelee        creatureModel.Melee            `json:"base_melee" validate:"required"`
-	UniqueName       creatureModel.UniqueName       `json:"unique_name" validate:"required"`
-	HealthMultiplier float32                        `json:"health_multiplier" validate:"required"`
-	DamageMultiplier float32                        `json:"damage_multiplier" validate:"required"`
-	UniqueVariant    creatureModel.UniqueVariant    `json:"unique_variant" validate:"required"`
+	UniqueID         int                    `json:"id" validate:"required"`
+	BaseID           int                    `json:"base_id" validate:"required"`
+	BaseName         string                 `json:"base_name" validate:"required"`
+	BaseHealth       uint                   `json:"base_health" validate:"required"`
+	BaseMelee        uint                   `json:"base_melee" validate:"required"`
+	UniqueName       string                 `json:"unique_name" validate:"required"`
+	HealthMultiplier float32                `json:"health_multiplier" validate:"required"`
+	DamageMultiplier float32                `json:"damage_multiplier" validate:"required"`
+	UniqueVariants   [2]UniqueVariantsValue `json:"unique_variants" validate:"required"`
+}
+
+// UniqueVariantsValue TODO UniqueValueに入れ子で定義できるなら修正する。配列の定義がうまくいかないので現状は別の型とする。
+type UniqueVariantsValue struct {
+	VariantID        int    `json:"variant_id" validate:"required"`
+	VariantName      string `json:"variant_name" validate:"required"`
+	VariantGroupName string `json:"group_name" validate:"required"`
 }
 
 func NewUniqueValue(unique creatureModel.UniqueDinosaur) UniqueValue {
+	vs := unique.UniqueVariant()
+	variants := lo.Map(vs[:], func(v creatureModel.DinosaurVariant, _ int) UniqueVariantsValue {
+		return UniqueVariantsValue{
+			VariantID:        v.ID().Value(),
+			VariantName:      v.Name().Value(),
+			VariantGroupName: v.Group().Value(),
+		}
+	})
 	return UniqueValue{
-		unique.UniqueID(),
-		unique.Dinosaur.BaseID(),
-		unique.Dinosaur.BaseName(),
-		unique.Dinosaur.Health(),
-		unique.Dinosaur.Melee(),
-		unique.UniqueName(),
+		unique.UniqueID().Value(),
+		unique.Dinosaur.BaseID().Value(),
+		unique.Dinosaur.BaseName().Value(),
+		unique.Dinosaur.Health().Value(),
+		unique.Dinosaur.Melee().Value(),
+		unique.UniqueName().Value(),
 		unique.HealthMultiplier().Value(),
 		unique.DamageMultiplier().Value(),
-		unique.UniqueVariant(),
+		([2]UniqueVariantsValue)(variants),
 	}
 }
 
@@ -65,7 +80,7 @@ type UniqueValues []UniqueValue
 
 func NewUniqueValues(uniques creatureModel.UniqueDinosaurs) UniqueValues {
 	return lo.Map(uniques, func(u creatureModel.UniqueDinosaur, _ int) UniqueValue {
-		return UniqueValue{}
+		return NewUniqueValue(u)
 	})
 }
 
@@ -98,13 +113,13 @@ func (u Unique) ListUniques(c echo.Context) error {
 }
 
 type uniqueCreateParams struct {
-	BaseName         creatureModel.DinosaurName                           `json:"base_name" validate:"required"`
-	BaseHealth       creatureModel.Health                                 `json:"base_health" validate:"required"`
-	BaseMelee        creatureModel.Melee                                  `json:"base_melee" validate:"required"`
-	UniqueName       creatureModel.UniqueName                             `json:"unique_name" validate:"required"`
-	HealthMultiplier creatureModel.UniqueMultiplier[creatureModel.Health] `json:"health_multiplier" validate:"required"`
-	DamageMultiplier creatureModel.UniqueMultiplier[creatureModel.Melee]  `json:"damage_multiplier" validate:"required"`
-	VariantIDs       [2]variantModel.VariantID                            `json:"variant_ids" validate:"required"`
+	BaseName         creatureModel.DinosaurName `json:"base_name" validate:"required"`
+	BaseHealth       creatureModel.Health       `json:"base_health" validate:"required"`
+	BaseMelee        creatureModel.Melee        `json:"base_melee" validate:"required"`
+	UniqueName       creatureModel.UniqueName   `json:"unique_name" validate:"required"`
+	HealthMultiplier float32                    `json:"health_multiplier" validate:"required"`
+	DamageMultiplier float32                    `json:"damage_multiplier" validate:"required"`
+	VariantIDs       [2]int                     `json:"unique_variants" validate:"required"`
 }
 
 func (u Unique) CreateUnique(c echo.Context) error {
@@ -112,7 +127,22 @@ func (u Unique) CreateUnique(c echo.Context) error {
 	if err := c.Bind(&params); err != nil {
 		return err
 	}
+	healthMultiplier, err := creatureModel.NewUniqueMultiplier[creatureModel.Health](
+		creatureModel.StatusMultiplier(params.HealthMultiplier),
+	)
+	if err != nil {
+		return err
+	}
 
+	damageMultiplier, err := creatureModel.NewUniqueMultiplier[creatureModel.Melee](
+		creatureModel.StatusMultiplier(params.DamageMultiplier),
+	)
+	if err != nil {
+		return err
+	}
+
+	ids := params.VariantIDs
+	variantIDs := lo.Map(ids[:], func(id int, _ int) variantModel.VariantID { return variantModel.VariantID(id) })
 	unique, err := u.UniqueUsecase.Create(
 		c.Request().Context(),
 		creatureSvc.NewCreateCreature(
@@ -120,9 +150,9 @@ func (u Unique) CreateUnique(c echo.Context) error {
 			params.BaseHealth,
 			params.BaseMelee,
 			params.UniqueName,
-			params.HealthMultiplier,
-			params.DamageMultiplier,
-			params.VariantIDs,
+			*healthMultiplier,
+			*damageMultiplier,
+			([2]variantModel.VariantID)(variantIDs),
 		),
 	)
 	if err != nil {

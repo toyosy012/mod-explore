@@ -17,18 +17,19 @@ type DinosaurModel struct {
 }
 
 type DinosaurClient struct {
-	*Client[DinosaurModel, int]
+	*Client
 }
 
 func NewDinosaurClient(injector *do.Injector) (service.DinosaurCommandRepository, error) {
 	return DinosaurClient{
-		do.MustInvoke[*Client[DinosaurModel, int]](injector),
+		do.MustInvoke[*Client](injector),
 	}, nil
 }
 
 func (c DinosaurClient) Insert(ctx context.Context, create service.CreateDinosaur) (model.DinosaurID, error) {
-	id, err := c.NamedStore(
+	id, err := NamedStore[int](
 		ctx,
+		c.Client,
 		`INSERT INTO dinosaurs (name, health, melee) VALUES (:name, :health, :melee) RETURNING id;`,
 		map[string]any{"name": create.Name(), "health": create.Health(), "melee": create.Melee()},
 	)
@@ -39,13 +40,14 @@ func (c DinosaurClient) Insert(ctx context.Context, create service.CreateDinosau
 }
 
 func (c DinosaurClient) Update(ctx context.Context, update service.UpdateDinosaur) error {
-	_, err := c.NamedStore(
+	_, err := NamedStore[int](
 		ctx,
+		c.Client,
 		`UPDATE dinosaurs SET name = :name, health = :health, melee = :melee, updated_at = NOW() WHERE id = :id;`,
 		map[string]any{"id": update.ID(), "name": update.Name(), "health": update.Health(), "melee": update.Melee()},
 	)
 	return err
 }
 func (c DinosaurClient) Delete(ctx context.Context, id model.DinosaurID) error {
-	return c.NamedDelete(ctx, `DELETE FROM dinosaurs WHERE id = :id;`, map[string]any{"id": id})
+	return NamedDelete(ctx, c.Client, `DELETE FROM dinosaurs WHERE id = :id;`, map[string]any{"id": id})
 }

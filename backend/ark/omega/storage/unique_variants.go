@@ -23,12 +23,12 @@ type UniqueVariantsModel struct {
 }
 
 type UniqueVariantsClient struct {
-	*Client[UniqueVariantsModel, int]
+	*Client
 }
 
 func NewUniqueVariantsClient(injector *do.Injector) (service.UniqueVariantsCommand, error) {
 	return UniqueVariantsClient{
-		do.MustInvoke[*Client[UniqueVariantsModel, int]](injector),
+		do.MustInvoke[*Client](injector),
 	}, nil
 }
 
@@ -37,8 +37,9 @@ func (c UniqueVariantsClient) Insert(ctx context.Context, create service.CreateV
 	records := lo.Map(ids[:], func(id variantModel.VariantID, _ int) map[string]any {
 		return map[string]any{"variant_id": id, "unique_id": create.UniqueDinosaurID()}
 	})
-	id, err := c.NamedStore(
+	id, err := NamedStore[int](
 		ctx,
+		c.Client,
 		`INSERT INTO unique_variants (variant_id) VALUES (:variant_id, :unique_id) RETURNING id;`,
 		records,
 	)
@@ -53,8 +54,9 @@ func (c UniqueVariantsClient) Update(ctx context.Context, update service.UpdateV
 	records := lo.Map(ids[:], func(id variantModel.VariantID, _ int) map[string]any {
 		return map[string]any{"variant_id": id, "unique_id": update.UniqueDinosaurID()}
 	})
-	_, err := c.NamedStore(
+	_, err := NamedStore[int](
 		ctx,
+		c.Client,
 		`UPDATE unique_variants SET unique_id = :unique_id, variant_id = :variant_id, updated_at = NOW() WHERE id = :id;`,
 		records,
 	)
@@ -65,5 +67,5 @@ func (c UniqueVariantsClient) Update(ctx context.Context, update service.UpdateV
 }
 
 func (c UniqueVariantsClient) Delete(ctx context.Context, id model.UniqueVariantID) error {
-	return c.NamedDelete(ctx, `DELETE FROM unique_variants WHERE id = :id;`, map[string]any{"id": id})
+	return NamedDelete(ctx, c.Client, `DELETE FROM unique_variants WHERE id = :id;`, map[string]any{"id": id})
 }

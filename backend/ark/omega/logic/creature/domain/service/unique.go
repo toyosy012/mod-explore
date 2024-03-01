@@ -30,7 +30,6 @@ type CreateCreature struct {
 	HealthMultiplier model.UniqueMultiplier[model.Health]
 	DamageMultiplier model.UniqueMultiplier[model.Melee]
 
-	UniqueID   model.UniqueDinosaurID
 	VariantIDs [2]variantModel.VariantID
 }
 
@@ -62,9 +61,10 @@ func (c CreateCreature) Dino() CreateDinosaur {
 	}
 }
 
-func (c CreateCreature) UniqueVariants() CreateVariants {
+func (c CreateCreature) UniqueVariants(id model.UniqueDinosaurID) CreateVariants {
 	return CreateVariants{
-		variantIDs: c.VariantIDs,
+		uniqueDinosaurID: id,
+		variantIDs:       c.VariantIDs,
 	}
 }
 
