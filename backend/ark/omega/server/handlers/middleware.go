@@ -50,11 +50,11 @@ func NewErrorHandler(s *echo.Echo) func(err error, c echo.Context) {
 	}
 }
 
-func Transctioner[T any, ID any](injector *do.Injector) echo.MiddlewareFunc {
+func Transctioner(injector *do.Injector) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			ctx := c.Request().Context()
-			ctx = logic.SetTransactioner(ctx, do.MustInvoke[*storage.Client[T, ID]](injector))
+			ctx = logic.SetTransactioner(ctx, do.MustInvoke[*storage.Client](injector))
 			c.SetRequest(c.Request().WithContext(ctx))
 			return next(c)
 		}

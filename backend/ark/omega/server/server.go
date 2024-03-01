@@ -51,7 +51,7 @@ func newServer(injector *do.Injector) (*echo.Echo, error) {
 
 	variantsV1 := s.Group(
 		"/api/v1/variants",
-		handlers.Transctioner[storage.VariantModel, int](injector),
+		handlers.Transctioner(injector),
 	)
 	{ // variant
 		handler := do.MustInvoke[handlers.VariantHandler](injector)
@@ -64,7 +64,7 @@ func newServer(injector *do.Injector) (*echo.Echo, error) {
 
 	variantGroupsV1 := s.Group(
 		"/api/v1/variant-groups",
-		handlers.Transctioner[storage.VariantGroupModel, int](injector),
+		handlers.Transctioner(injector),
 	)
 	{ // variant group
 		handler := do.MustInvoke[handlers.VariantGroupHandler](injector)
@@ -77,7 +77,7 @@ func newServer(injector *do.Injector) (*echo.Echo, error) {
 	{
 		uniqueQueryGroupV1 := s.Group(
 			"/api/v1/uniques",
-			handlers.Transctioner[storage.UniqueQueryModel, int](injector),
+			handlers.Transctioner(injector),
 		)
 		handler := do.MustInvoke[handlers.UniqueHandler](injector)
 		uniqueQueryGroupV1.GET("/:id", handler.ReadUnique)
@@ -110,23 +110,19 @@ func Wired() (*do.Injector, error) {
 
 	do.ProvideValue(injector, slog.New(slog.NewJSONHandler(os.Stdout, nil)))
 
-	do.Provide(injector, storage.NewSQLxClient[storage.VariantModel, int])
+	do.Provide(injector, storage.NewSQLxClient)
+
 	do.Provide(injector, storage.NewVariantClient)
 	do.Provide(injector, variantUsecase.NewVariant)
 	do.Provide(injector, handlers.NewVariant)
 
-	do.Provide(injector, storage.NewSQLxClient[storage.VariantGroupModel, int])
 	do.Provide(injector, storage.NewVariantGroupClient)
 	do.Provide(injector, variantUsecase.NewVariantGroup)
 	do.Provide(injector, handlers.NewVariantGroup)
 
-	do.Provide(injector, storage.NewSQLxClient[storage.UniqueQueryModel, int])
 	do.Provide(injector, storage.NewUniqueQueryRepo)
-	do.Provide(injector, storage.NewSQLxClient[storage.UniqueModel, int])
 	do.Provide(injector, storage.NewUniqueCommandRepo)
-	do.Provide(injector, storage.NewSQLxClient[storage.UniqueVariantsModel, int])
 	do.Provide(injector, storage.NewUniqueVariantsClient)
-	do.Provide(injector, storage.NewSQLxClient[storage.DinosaurModel, int])
 	do.Provide(injector, storage.NewDinosaurClient)
 	do.Provide(injector, creatureUsecase.NewUnique)
 	do.Provide(injector, handlers.NewUnique)
