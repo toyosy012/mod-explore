@@ -193,7 +193,9 @@ func (r UniqueCommandRepo) Insert(ctx context.Context, create service.CreateUniq
 			RETURNING id;`,
 		map[string]any{
 			"dinosaur_id": create.DinosaurID(), "name": create.Name(),
-			"health_multiplier": create.HealthMultiplier(), "damage_multiplier": create.DamageMultiplier()},
+			"health_multiplier": create.HealthMultiplier().Value(),
+			"damage_multiplier": create.DamageMultiplier().Value(),
+		},
 	)
 	if err != nil {
 		return model.UniqueDinosaurID(0), err
@@ -211,7 +213,8 @@ func (r UniqueCommandRepo) Update(ctx context.Context, update service.UpdateUniq
 			WHERE id = :id;`,
 		map[string]any{
 			"id": update.ID(), "dinosaur_id": update.DinosaurID(), "name": update.Name(),
-			"health_multiplier": update.HealthMultiplier(), "damage_multiplier": update.DamageMultiplier(),
+			"health_multiplier": update.HealthMultiplier().Value(),
+			"damage_multiplier": update.DamageMultiplier().Value(),
 		},
 	)
 	if err != nil {
