@@ -9,7 +9,7 @@ import (
 )
 
 type UniqueVariantsCommand interface {
-	Insert(context.Context, CreateVariants) (model.UniqueVariantID, error)
+	Insert(context.Context, CreateVariants) error
 	Update(context.Context, UpdateVariants) error
 	Delete(context.Context, model.UniqueVariantID) error
 }

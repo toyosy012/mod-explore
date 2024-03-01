@@ -32,21 +32,21 @@ func NewUniqueVariantsClient(injector *do.Injector) (service.UniqueVariantsComma
 	}, nil
 }
 
-func (c UniqueVariantsClient) Insert(ctx context.Context, create service.CreateVariants) (model.UniqueVariantID, error) {
+func (c UniqueVariantsClient) Insert(ctx context.Context, create service.CreateVariants) error {
 	ids := create.VariantIDs()
 	records := lo.Map(ids[:], func(id variantModel.VariantID, _ int) map[string]any {
-		return map[string]any{"variant_id": id, "unique_id": create.UniqueDinosaurID()}
+		return map[string]any{"unique_id": create.UniqueDinosaurID(), "variant_id": id}
 	})
-	id, err := NamedStore[int](
+	_, err := NamedStore[int](
 		ctx,
 		c.Client,
-		`INSERT INTO unique_variants (variant_id) VALUES (:variant_id, :unique_id) RETURNING id;`,
+		`INSERT INTO unique_variants (unique_id, variant_id) VALUES (:unique_id, :variant_id);`,
 		records,
 	)
 	if err != nil {
-		return 0, err
+		return err
 	}
-	return model.UniqueVariantID(id), err
+	return nil
 }
 
 func (c UniqueVariantsClient) Update(ctx context.Context, update service.UpdateVariants) error {
