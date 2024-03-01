@@ -55,16 +55,24 @@ type UniqueVariantsValue struct {
 }
 
 func NewUniqueValue(unique creatureModel.UniqueDinosaur) UniqueValue {
+	vs := unique.UniqueVariant()
+	variants := lo.Map(vs[:], func(v creatureModel.DinosaurVariant, _ int) UniqueVariantsValue {
+		return UniqueVariantsValue{
+			VariantID:        v.ID().Value(),
+			VariantName:      v.Name().Value(),
+			VariantGroupName: v.Group().Value(),
+		}
+	})
 	return UniqueValue{
-		unique.UniqueID(),
-		unique.Dinosaur.BaseID(),
-		unique.Dinosaur.BaseName(),
-		unique.Dinosaur.Health(),
-		unique.Dinosaur.Melee(),
-		unique.UniqueName(),
+		unique.UniqueID().Value(),
+		unique.Dinosaur.BaseID().Value(),
+		unique.Dinosaur.BaseName().Value(),
+		unique.Dinosaur.Health().Value(),
+		unique.Dinosaur.Melee().Value(),
+		unique.UniqueName().Value(),
 		unique.HealthMultiplier().Value(),
 		unique.DamageMultiplier().Value(),
-		unique.UniqueVariant(),
+		([2]UniqueVariantsValue)(variants),
 	}
 }
 

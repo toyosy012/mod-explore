@@ -45,7 +45,12 @@ func (d UniqueDinosaur) UniqueVariant() UniqueVariant               { return d.u
 type UniqueDinosaurs []UniqueDinosaur
 
 type UniqueDinosaurID int
+
+func (i UniqueDinosaurID) Value() int { return int(i) }
+
 type UniqueName string
+
+func (n UniqueName) Value() string { return string(n) }
 
 // DinosaurStatus multiplierでfloat32との計算に用いるため、数値型のみに限定する
 type DinosaurStatus interface {
