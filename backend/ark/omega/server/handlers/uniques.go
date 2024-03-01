@@ -105,13 +105,13 @@ func (u Unique) ListUniques(c echo.Context) error {
 }
 
 type uniqueCreateParams struct {
-	BaseName         creatureModel.DinosaurName                           `json:"base_name" validate:"required"`
-	BaseHealth       creatureModel.Health                                 `json:"base_health" validate:"required"`
-	BaseMelee        creatureModel.Melee                                  `json:"base_melee" validate:"required"`
-	UniqueName       creatureModel.UniqueName                             `json:"unique_name" validate:"required"`
-	HealthMultiplier creatureModel.UniqueMultiplier[creatureModel.Health] `json:"health_multiplier" validate:"required"`
-	DamageMultiplier creatureModel.UniqueMultiplier[creatureModel.Melee]  `json:"damage_multiplier" validate:"required"`
-	VariantIDs       [2]variantModel.VariantID                            `json:"variant_ids" validate:"required"`
+	BaseName         creatureModel.DinosaurName `json:"base_name" validate:"required"`
+	BaseHealth       creatureModel.Health       `json:"base_health" validate:"required"`
+	BaseMelee        creatureModel.Melee        `json:"base_melee" validate:"required"`
+	UniqueName       creatureModel.UniqueName   `json:"unique_name" validate:"required"`
+	HealthMultiplier float32                    `json:"health_multiplier" validate:"required"`
+	DamageMultiplier float32                    `json:"damage_multiplier" validate:"required"`
+	VariantIDs       [2]int                     `json:"unique_variants" validate:"required"`
 }
 
 func (u Unique) CreateUnique(c echo.Context) error {
