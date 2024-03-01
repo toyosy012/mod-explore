@@ -25,7 +25,7 @@ type testModel struct {
 type TestClientSuite struct {
 	suite.Suite
 
-	cli *Client[testModel, int]
+	cli *Client
 }
 
 func TestTestClientSuite(t *testing.T) {
@@ -55,10 +55,10 @@ func (s *TestClientSuite) SetupSuite() {
 			return ConnectPostgres(postgresDSN)
 		})
 
-		do.Provide(injector, NewSQLxClient[testModel, int])
+		do.Provide(injector, NewSQLxClient)
 	}
 
-	db := do.MustInvoke[*Client[testModel, int]](injector)
+	db := do.MustInvoke[*Client](injector)
 	s.cli = db
 	{ // migration up
 		driver, err := postgres.WithInstance(db.DB.DB, &postgres.Config{})
@@ -106,7 +106,7 @@ func (s *TestClientSuite) TestNamedGet() {
 	ctx := context.Background()
 	timeout, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	r, err := s.cli.NamedGet(timeout, `SELECT id, name FROM tests WHERE id = :id`, map[string]any{"id": 1})
+	r, err := NamedGet[testModel](timeout, s.cli, `SELECT id, name FROM tests WHERE id = :id`, map[string]any{"id": 1})
 	if err != nil {
 		s.T().Log(fmt.Printf("failed select test record: %s", err.Error()))
 		s.T().Fail()
@@ -115,11 +115,11 @@ func (s *TestClientSuite) TestNamedGet() {
 	s.Equal(&testModel{ID: 1, Name: "test"}, r)
 }
 
-func (s *TestClientSuite) TestNamedSelect() {
+func (s *TestClientSuite) TestSelect() {
 	ctx := context.Background()
 	timeout, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	rs, err := s.cli.NamedSelect(timeout, `SELECT id, name FROM tests`)
+	rs, err := Select[testModel](timeout, s.cli, `SELECT id, name FROM tests`)
 	if err != nil {
 		s.T().Log(fmt.Printf("failed select test record: %s", err.Error()))
 		s.T().Fail()
@@ -132,13 +132,13 @@ func (s *TestClientSuite) TestNamedStore() {
 	ctx := context.Background()
 	timeout, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	id, err := s.cli.NamedStore(timeout, `INSERT INTO tests(name) VALUES(:name) RETURNING id`, map[string]any{"name": "test2"})
+	id, err := NamedStore[int](timeout, s.cli, `INSERT INTO tests(name) VALUES(:name) RETURNING id`, map[string]any{"name": "test2"})
 	if err != nil {
 		s.T().Log(fmt.Printf("insert test record: %s", err.Error()))
 		s.T().Fail()
 	}
 
-	r, err := s.cli.NamedGet(timeout, `SELECT id, name FROM tests WHERE id = :id`, map[string]any{"id": id})
+	r, err := NamedGet[testModel](timeout, s.cli, `SELECT id, name FROM tests WHERE id = :id`, map[string]any{"id": id})
 	if err != nil {
 		s.T().Log(fmt.Printf("failed select test record: %s", err.Error()))
 		s.T().Fail()
@@ -151,12 +151,12 @@ func (s *TestClientSuite) TestNamedDelete() {
 	ctx := context.Background()
 	timeout, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	id, err := s.cli.NamedStore(timeout, `INSERT INTO tests(name) VALUES(:name) RETURNING id`, map[string]any{"name": "test3"})
+	id, err := NamedStore[int](timeout, s.cli, `INSERT INTO tests(name) VALUES(:name) RETURNING id`, map[string]any{"name": "test3"})
 	if err != nil {
 		s.T().Log(fmt.Printf("insert test record: %s", err.Error()))
 		s.T().Fail()
 	}
 
-	err = s.cli.NamedDelete(timeout, `DELETE FROM tests WHERE id = :id`, map[string]any{"id": id})
+	err = NamedDelete(timeout, s.cli, `DELETE FROM tests WHERE id = :id`, map[string]any{"id": id})
 	s.ErrorIs(err, nil)
 }

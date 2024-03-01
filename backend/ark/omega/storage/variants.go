@@ -10,12 +10,12 @@ import (
 )
 
 type VariantClient struct {
-	*Client[VariantModel, int]
+	*Client
 }
 
 func NewVariantClient(injector *do.Injector) (service.VariantRepository, error) {
 	return VariantClient{
-		do.MustInvoke[*Client[VariantModel, int]](injector),
+		do.MustInvoke[*Client](injector),
 	}, nil
 }
 
@@ -27,8 +27,9 @@ type VariantModel struct {
 }
 
 func (v VariantClient) FindVariant(ctx context.Context, id model.VariantID) (*model.Variant, error) {
-	row, err := v.NamedGet(
+	row, err := NamedGet[VariantModel](
 		ctx,
+		v.Client,
 		`SELECT variants.id, variants.name, groups.name AS "group" FROM variants
     INNER JOIN groups ON (variants.group_id = groups.id) WHERE variants.id = :id;`,
 		map[string]any{"id": id},
@@ -46,8 +47,9 @@ func (v VariantClient) FindVariant(ctx context.Context, id model.VariantID) (*mo
 }
 
 func (v VariantClient) ListVariants(ctx context.Context) (model.Variants, error) {
-	rows, err := v.NamedSelect(
+	rows, err := Select[VariantModel](
 		ctx,
+		v.Client,
 		`SELECT variants.id, variants.name, groups.name AS "group" FROM variants
     INNER JOIN groups ON (variants.group_id = groups.id);`,
 	)
@@ -71,8 +73,9 @@ func (v VariantClient) ListVariants(ctx context.Context) (model.Variants, error)
 }
 
 func (v VariantClient) CreateVariant(ctx context.Context, create service.CreateVariant) (*model.Variant, error) {
-	id, err := v.NamedStore(
+	id, err := NamedStore[int](
 		ctx,
+		v.Client,
 		`INSERT INTO variants (name, group_id) VALUES (:name, :groupID) RETURNING id;`,
 		map[string]any{"name": create.Name(), "groupID": create.GroupID()},
 	)
@@ -89,8 +92,9 @@ func (v VariantClient) CreateVariant(ctx context.Context, create service.CreateV
 }
 
 func (v VariantClient) UpdateVariant(ctx context.Context, update service.UpdateVariant) (*model.Variant, error) {
-	id, err := v.NamedStore(
+	id, err := NamedStore[int](
 		ctx,
+		v.Client,
 		`UPDATE variants SET name = :name, group_id = :groupID, updated_at = NOW() WHERE id = :id RETURNING id;`,
 		map[string]any{"id": update.ID(), "name": update.Name(), "groupID": update.GroupID()},
 	)
@@ -106,5 +110,5 @@ func (v VariantClient) UpdateVariant(ctx context.Context, update service.UpdateV
 	return result, nil
 }
 func (v VariantClient) DeleteVariant(ctx context.Context, id model.VariantID) error {
-	return v.NamedDelete(ctx, `DELETE FROM variants WHERE id = :id;`, map[string]any{"id": id})
+	return NamedDelete(ctx, v.Client, `DELETE FROM variants WHERE id = :id;`, map[string]any{"id": id})
 }

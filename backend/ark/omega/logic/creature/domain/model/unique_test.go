@@ -14,6 +14,7 @@ type UniqueDinosaurTestSuite struct {
 	baseDino                Dinosaur
 	defaultID               UniqueDinosaurID
 	defaultName             UniqueName
+	defaultVariantsID       UniqueVariantID
 	variants                UniqueVariant
 	defaultHealthMultiplier UniqueMultiplier[Health]
 	defaultDamageMultiplier UniqueMultiplier[Melee]
@@ -53,7 +54,7 @@ func NewUniqueDinosaurTestSuite() (*UniqueDinosaurTestSuite, error) {
 	)
 
 	variants := UniqueVariant(
-		[2]DinosaurVariant{
+		[]DinosaurVariant{
 			NewDinosaurVariant(
 				model.NewVariant(cosmicID, cosmic, singularity),
 				[]VariantDescription{
@@ -84,6 +85,7 @@ func NewUniqueDinosaurTestSuite() (*UniqueDinosaurTestSuite, error) {
 
 		defaultID:               UniqueDinosaurID(1),
 		defaultName:             "Kenny",
+		defaultVariantsID:       UniqueVariantID(1),
 		variants:                variants,
 		defaultHealthMultiplier: *defaultHealthMultiplier,
 		defaultDamageMultiplier: *defaultDamageMultiplier,
@@ -94,7 +96,9 @@ func (s *UniqueDinosaurTestSuite) TestMultiplierHealth() {
 	s.T().Log("体力型で倍率の型とベース値の計算が可能かテスト")
 
 	uniqueDino := NewUniqueDinosaur(
-		s.baseDino, UniqueDinosaurID(1), s.defaultName, s.variants, s.defaultHealthMultiplier, s.defaultDamageMultiplier,
+		s.baseDino, UniqueDinosaurID(1), s.defaultName,
+		s.defaultHealthMultiplier, s.defaultDamageMultiplier,
+		s.variants,
 	)
 
 	uniqueHealth := uniqueDino.Health()
@@ -114,7 +118,9 @@ func (s *UniqueDinosaurTestSuite) TestMultiplierDamage() {
 	s.T().Log("攻撃力型で倍率の型とベース値の計算が可能かテスト")
 
 	uniqueDino := NewUniqueDinosaur(
-		s.baseDino, UniqueDinosaurID(1), "Kenny", s.variants, s.defaultHealthMultiplier, s.defaultDamageMultiplier,
+		s.baseDino, UniqueDinosaurID(1), "Kenny",
+		s.defaultHealthMultiplier, s.defaultDamageMultiplier,
+		s.variants,
 	)
 
 	uniqueHealth := uniqueDino.Damage()

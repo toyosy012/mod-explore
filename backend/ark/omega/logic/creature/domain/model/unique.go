@@ -13,40 +13,53 @@ type UniqueDinosaur struct {
 
 	uniqueDinoID     UniqueDinosaurID
 	uniqueName       UniqueName
-	variants         UniqueVariant
 	healthMultiplier UniqueMultiplier[Health]
 	damageMultiplier UniqueMultiplier[Melee]
+	uniqueVariant    UniqueVariant
 }
 
 func NewUniqueDinosaur(
 	base Dinosaur,
 	id UniqueDinosaurID,
 	name UniqueName,
-	variants UniqueVariant,
 	healthMultiplier UniqueMultiplier[Health],
 	damageMultiplier UniqueMultiplier[Melee],
+	uniqueVariant UniqueVariant,
 ) UniqueDinosaur {
 	return UniqueDinosaur{
 		Dinosaur:         base,
 		uniqueDinoID:     id,
 		uniqueName:       name,
-		variants:         variants,
 		healthMultiplier: healthMultiplier,
 		damageMultiplier: damageMultiplier,
+		uniqueVariant:    uniqueVariant,
 	}
 }
 
+func (d UniqueDinosaur) UniqueID() UniqueDinosaurID                 { return d.uniqueDinoID }
+func (d UniqueDinosaur) UniqueName() UniqueName                     { return d.uniqueName }
+func (d UniqueDinosaur) HealthMultiplier() UniqueMultiplier[Health] { return d.healthMultiplier }
+func (d UniqueDinosaur) DamageMultiplier() UniqueMultiplier[Melee]  { return d.damageMultiplier }
+func (d UniqueDinosaur) UniqueVariant() UniqueVariant               { return d.uniqueVariant }
+
+type UniqueDinosaurs []UniqueDinosaur
+
 type UniqueDinosaurID int
+
+func (i UniqueDinosaurID) Value() int { return int(i) }
+
 type UniqueName string
+
+func (n UniqueName) Value() string { return string(n) }
 
 // DinosaurStatus multiplierでfloat32との計算に用いるため、数値型のみに限定する
 type DinosaurStatus interface {
 	Health | Melee
 }
 
-type UniqueMultiplier[T DinosaurStatus] struct{ value UniqueTotalMultiplier }
+type UniqueMultiplier[T DinosaurStatus] struct{ value StatusMultiplier }
 
-func NewUniqueMultiplier[T DinosaurStatus](v UniqueTotalMultiplier) (*UniqueMultiplier[T], error) {
+func NewUniqueMultiplier[T DinosaurStatus](v StatusMultiplier) (*UniqueMultiplier[T], error) {
 	if errUniqueMinMultiplier >= v.ToFloat32() {
 		return nil, errors.New("ユニーク生物のステータス倍率は0より大きくしてください")
 	}
@@ -54,6 +67,8 @@ func NewUniqueMultiplier[T DinosaurStatus](v UniqueTotalMultiplier) (*UniqueMult
 }
 
 type UniqueMultipliedStatus[T DinosaurStatus] float32
+
+func (u UniqueMultiplier[T]) Value() float32 { return u.value.ToFloat32() }
 
 // multiple UniqueMultiplierに与えた型引数と同じ型のbaseを与えないとエラーになるようにする
 func (u UniqueMultiplier[T]) multiple(base T) UniqueMultipliedStatus[T] {
@@ -70,6 +85,6 @@ func (d UniqueDinosaur) Damage() UniqueMultipliedStatus[Melee] {
 
 type UniqueVariant [2]DinosaurVariant
 
-type UniqueTotalMultiplier float32
+type StatusMultiplier float32
 
-func (m UniqueTotalMultiplier) ToFloat32() float32 { return float32(m) }
+func (m StatusMultiplier) ToFloat32() float32 { return float32(m) }
