@@ -75,13 +75,16 @@ func newServer(injector *do.Injector) (*echo.Echo, error) {
 		variantGroupsV1.DELETE("/:id", handler.Delete)
 	}
 	{
-		uniqueQueryGroupV1 := s.Group(
+		uniquesV1 := s.Group(
 			"/api/v1/uniques",
 			handlers.Transctioner(injector),
 		)
 		handler := do.MustInvoke[handlers.UniqueHandler](injector)
-		uniqueQueryGroupV1.GET("/:id", handler.ReadUnique)
-		uniqueQueryGroupV1.GET("", handler.ListUniques)
+		uniquesV1.GET("/:id", handler.ReadUnique)
+		uniquesV1.GET("", handler.ListUniques)
+		uniquesV1.POST("/new", handler.CreateUnique)
+		uniquesV1.PUT("/:id", handler.UpdateUnique)
+		uniquesV1.DELETE("/:id", handler.DeleteUnique)
 	}
 
 	return s, nil
