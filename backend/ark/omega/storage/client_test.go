@@ -115,11 +115,11 @@ func (s *TestClientSuite) TestNamedGet() {
 	s.Equal(&testModel{ID: 1, Name: "test"}, r)
 }
 
-func (s *TestClientSuite) TestNamedSelect() {
+func (s *TestClientSuite) TestSelect() {
 	ctx := context.Background()
 	timeout, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	rs, err := NamedSelect[testModel](timeout, s.cli, `SELECT id, name FROM tests`)
+	rs, err := Select[testModel](timeout, s.cli, `SELECT id, name FROM tests`)
 	if err != nil {
 		s.T().Log(fmt.Printf("failed select test record: %s", err.Error()))
 		s.T().Fail()

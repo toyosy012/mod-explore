@@ -51,20 +51,6 @@ func Select[T any](ctx context.Context, c *Client, query string) ([]T, error) {
 	return rows, nil
 }
 
-func NamedSelect[T any](ctx context.Context, c sqlx.ExtContext, query string, arg ...any) ([]T, error) {
-	query, params, err := c.BindNamed(query, arg)
-	if err != nil {
-		return nil, err
-	}
-
-	var rows []T
-	if err = sqlx.SelectContext(ctx, c, &rows, query, params...); err != nil {
-		return nil, err
-	}
-
-	return rows, nil
-}
-
 func NamedStore[ID any](ctx context.Context, c *Client, query string, arg any) (id ID, err error) {
 	stmt, err := c.PrepareNamedContext(ctx, query)
 	if err != nil {
