@@ -44,7 +44,7 @@ func (v VariantGroupClient) Select(ctx context.Context, id model.VariantGroupID)
 }
 
 func (v VariantGroupClient) List(ctx context.Context) (model.VariantGroups, error) {
-	rows, err := NamedSelect[VariantGroupModel](
+	rows, err := Select[VariantGroupModel](
 		ctx,
 		v.Client,
 		`SELECT id, name FROM groups;`,
