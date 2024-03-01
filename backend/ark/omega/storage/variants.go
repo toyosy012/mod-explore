@@ -47,7 +47,7 @@ func (v VariantClient) FindVariant(ctx context.Context, id model.VariantID) (*mo
 }
 
 func (v VariantClient) ListVariants(ctx context.Context) (model.Variants, error) {
-	rows, err := NamedSelect[VariantModel](
+	rows, err := Select[VariantModel](
 		ctx,
 		v.Client,
 		`SELECT variants.id, variants.name, groups.name AS "group" FROM variants
