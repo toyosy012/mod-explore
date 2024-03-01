@@ -85,9 +85,9 @@ func (u Unique) Create(ctx context.Context, create service.CreateCreature) (_ *m
 		); err != nil {
 			return nil, failure.Wrap(err)
 		}
-		if _, err = u.variantCommand.Insert(
+		if err = u.variantCommand.Insert(
 			ctx,
-			create.UniqueVariants(),
+			create.UniqueVariants(uniqueID),
 		); err != nil {
 			return nil, failure.Wrap(err)
 		}
