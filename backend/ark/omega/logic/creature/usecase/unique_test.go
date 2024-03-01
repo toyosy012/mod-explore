@@ -252,19 +252,19 @@ func (s *UniqueDinosaurTestSuite) TestInsert() {
 		).
 			Return(model.DinosaurID(creatureID), nil).
 			Once()
-		s.mockVariantsCommand.On(
-			insert,
-			ctx,
-			s.create.UniqueVariants(),
-		).
-			Return(model.UniqueVariantID(variantsID), nil).
-			Once()
 		s.mockUniqueCommand.On(
 			insert,
 			ctx,
 			s.create.UniqueDinosaur(creatureID),
 		).
 			Return(model.UniqueDinosaurID(uniqueID), nil).
+			Once()
+		s.mockVariantsCommand.On(
+			insert,
+			ctx,
+			s.create.UniqueVariants(uniqueID),
+		).
+			Return(nil).
 			Once()
 
 		s.mockUniqueQuery.On(
@@ -329,9 +329,9 @@ func (s *UniqueDinosaurTestSuite) TestInsert() {
 		s.mockVariantsCommand.On(
 			insert,
 			ctx,
-			s.create.UniqueVariants(),
+			s.create.UniqueVariants(uniqueID),
 		).
-			Return(nil, e).
+			Return(e).
 			Once()
 		_, err := s.usecase.Create(ctx, s.create)
 		s.True(errors.Is(err, e))

@@ -150,14 +150,9 @@ func (e *mockVariantsCommandRepo) WithTransaction(ctx context.Context, fn func(c
 
 func (e *mockVariantsCommandRepo) Insert(
 	ctx context.Context, create service.CreateVariants,
-) (model.UniqueVariantID, error) {
+) error {
 	args := e.Called(ctx, create)
-
-	r := args.Get(0)
-	if r == nil {
-		return 0, args.Error(1)
-	}
-	return args.Get(0).(model.UniqueVariantID), args.Error(1)
+	return args.Error(0)
 }
 
 func (e *mockVariantsCommandRepo) Update(
