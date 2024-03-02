@@ -13,6 +13,12 @@ import (
 	"mods-explore/ark/omega/logic/creature/domain/service"
 )
 
+// UniqueQueryRepository 集約内のテーブルをjoinしてレコードを取得する処理を定義
+type UniqueQueryRepository interface {
+	Select(context.Context, model.UniqueDinosaurID) (*service.ResponseCreature, error)
+	List(context.Context) (service.ResponseCreatures, error)
+}
+
 type UniqueUsecase interface {
 	Find(context.Context, model.UniqueDinosaurID) (*model.UniqueDinosaur, error)
 	List(context.Context) (model.UniqueDinosaurs, error)
@@ -23,7 +29,7 @@ type UniqueUsecase interface {
 
 type Unique struct {
 	dinoCommand    service.DinosaurCommandRepository
-	uniqueQuery    service.UniqueQueryRepository
+	uniqueQuery    UniqueQueryRepository
 	uniqueCommand  service.UniqueCommandRepository
 	variantCommand service.UniqueVariantsCommand
 }
@@ -31,7 +37,7 @@ type Unique struct {
 func NewUnique(injector *do.Injector) (UniqueUsecase, error) {
 	return &Unique{
 		dinoCommand:    do.MustInvoke[service.DinosaurCommandRepository](injector),
-		uniqueQuery:    do.MustInvoke[service.UniqueQueryRepository](injector),
+		uniqueQuery:    do.MustInvoke[UniqueQueryRepository](injector),
 		uniqueCommand:  do.MustInvoke[service.UniqueCommandRepository](injector),
 		variantCommand: do.MustInvoke[service.UniqueVariantsCommand](injector),
 	}, nil

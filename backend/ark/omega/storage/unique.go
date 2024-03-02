@@ -10,6 +10,7 @@ import (
 
 	"mods-explore/ark/omega/logic/creature/domain/model"
 	"mods-explore/ark/omega/logic/creature/domain/service"
+	"mods-explore/ark/omega/logic/creature/usecase"
 	variant "mods-explore/ark/omega/logic/variant/domain/model"
 )
 
@@ -89,7 +90,7 @@ type UniqueQueryRepo struct {
 	*Client
 }
 
-func NewUniqueQueryRepo(injector *do.Injector) (service.UniqueQueryRepository, error) {
+func NewUniqueQueryRepo(injector *do.Injector) (usecase.UniqueQueryRepository, error) {
 	return &UniqueQueryRepo{
 		do.MustInvoke[*Client](injector),
 	}, nil

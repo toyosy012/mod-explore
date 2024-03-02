@@ -9,12 +9,6 @@ import (
 	variantModel "mods-explore/ark/omega/logic/variant/domain/model"
 )
 
-// UniqueQueryRepository 集約内のテーブルをjoinしてレコードを取得する処理を定義
-type UniqueQueryRepository interface {
-	Select(context.Context, model.UniqueDinosaurID) (*ResponseCreature, error)
-	List(context.Context) (ResponseCreatures, error)
-}
-
 type UniqueCommandRepository interface {
 	Insert(context.Context, CreateUniqueDinosaur) (model.UniqueDinosaurID, error)
 	Update(context.Context, UpdateUniqueDinosaur) error

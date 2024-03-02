@@ -60,7 +60,7 @@ func (g *mockDinoCommandRepo) Delete(ctx context.Context, id model.DinosaurID) e
 }
 
 var _ logic.Transactioner = (*mockUniqueQueryRepo)(nil)
-var _ service.UniqueQueryRepository = (*mockUniqueQueryRepo)(nil)
+var _ UniqueQueryRepository = (*mockUniqueQueryRepo)(nil)
 
 type mockUniqueQueryRepo struct {
 	mock.Mock
