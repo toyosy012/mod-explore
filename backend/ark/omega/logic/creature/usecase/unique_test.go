@@ -61,7 +61,7 @@ func (s *UniqueDinosaurTestSuite) SetupSuite() {
 		do.ProvideValue[service.DinosaurCommandRepository](injector, mockDinoCommand)
 		s.mockDinoCommand = mockDinoCommand
 		mockUniqueQuery := newMockUniqueQuery()
-		do.ProvideValue[service.UniqueQueryRepository](injector, mockUniqueQuery)
+		do.ProvideValue[UniqueQueryRepository](injector, mockUniqueQuery)
 		s.mockUniqueQuery = mockUniqueQuery
 		mockUniqueCommand := newMockUniqueCommand()
 		do.ProvideValue[service.UniqueCommandRepository](injector, mockUniqueCommand)
